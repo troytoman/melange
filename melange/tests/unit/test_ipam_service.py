@@ -39,9 +39,12 @@ class ControllerTestBase(tests.BaseTest):
 
     def setUp(self):
         super(ControllerTestBase, self).setUp()
-        conf, melange_app = config.Config.load_paste_app('melangeapp',
+        conf, melange_v0_1 = config.Config.load_paste_app('melangeapp_v0_1',
                 {"config_file": tests.test_config_file()}, None)
-        self.app = unit.TestApp(melange_app)
+        self.app = unit.TestApp(melange_v0_1)
+        conf, melange_v1_0 = config.Config.load_paste_app('melangeapp_v1_0',
+                {"config_file": tests.test_config_file()}, None)
+        self.appv1_0 = unit.TestApp(melange_v1_0)
 
 
 class DummyApp(wsgi.Router):
@@ -49,7 +52,7 @@ class DummyApp(wsgi.Router):
     def __init__(self, controller):
         mapper = routes.Mapper()
         mapper.resource("resource", "/resources",
-                                controller=controller.create_resource())
+                        controller=controller.create_resource())
         super(DummyApp, self).__init__(mapper)
 
 
@@ -2314,7 +2317,7 @@ class TestInterfacesController(ControllerTestBase):
 
 class TestInstanceInterfacesController(ControllerTestBase):
 
-    def test_update_creates_interfaces(self):
+    def test_update_all_creates_interfaces(self):
         net_ids = ["net_id_1", "net_id_2", "net_id_3"]
         for net_id in net_ids:
             factory_models.PrivateIpBlockFactory(tenant_id="RAX",
@@ -2330,6 +2333,7 @@ class TestInstanceInterfacesController(ControllerTestBase):
 
         response = self.app.put_json("/ipam/instances/instance_id/interfaces",
                                      put_data)
+
         self.assertEqual(response.status_int, 200)
         ifaces = sorted(models.Interface.find_all(device_id='instance_id'),
                         key=lambda iface: iface.plugged_in_network_id())
@@ -2357,7 +2361,7 @@ class TestInstanceInterfacesController(ControllerTestBase):
         self.assertTrue(models.IpAddress.get(
                         previous_ip.id).marked_for_deallocation)
 
-    def test_get_interfaces(self):
+    def test_get_all_interfaces(self):
         provider_block = factory_models.IpBlockFactory(tenant_id="RAX",
                                                        network_id="net_id")
         self._setup_interface_and_ip("instance_id",
@@ -2370,7 +2374,7 @@ class TestInstanceInterfacesController(ControllerTestBase):
         self.assertEqual([self._get_iface_data(iface)],
                          response.json['instance']['interfaces'])
 
-    def test_delete_interfaces(self):
+    def test_delete_all_interfaces_of_instance(self):
         provider_block = factory_models.IpBlockFactory(tenant_id="RAX",
                                                        network_id="net_id")
         self._setup_interface_and_ip("instance_id",
@@ -2393,6 +2397,112 @@ class TestInstanceInterfacesController(ControllerTestBase):
         self.assertIsNone(deleted_instance_ifaces)
         self.assertIsNotNone(existing_instance_ifaces)
 
+    def test_create_an_interface(self):
+        provider_block = factory_models.IpBlockFactory(tenant_id="RAX",
+                                                       network_id="net_id")
+        existing_ip_on_instance = self._setup_interface_and_ip("instance_id",
+                                                               "leasee_tenant",
+                                                               provider_block)
+        response = self.app.post_json("/ipam/instances/instance_id/interfaces",
+                                     {'interface': {
+                                         'tenant_id': "leasee_tenant",
+                                         'network': {
+                                              'id': "net_id",
+                                              'tenant_id': "RAX"
+                                              }
+                                         }
+                                      })
+
+        self.assertIsNotNone(models.Interface.find_by(
+            device_id="instance_id", id=existing_ip_on_instance.interface_id))
+        created_interface = models.Interface.find_by(
+                device_id="instance_id", id=response.json['interface']['id'])
+        self.assertEqual(created_interface.plugged_in_network_id(), "net_id")
+        self.assertEqual(created_interface.tenant_id, "leasee_tenant")
+        self.assertEqual(response.json['interface'],
+                         self._get_iface_data(created_interface))
+
+    def test_show_an_interface(self):
+        provider_block = factory_models.IpBlockFactory(tenant_id="RAX",
+                                                       network_id="net_id")
+        allocated_ip = self._setup_interface_and_ip("instance_id",
+                                                    "leasee_tenant",
+                                                    provider_block)
+        response = self.app.get("/ipam/instances/instance_id/interfaces/%s" %
+                                allocated_ip.interface_id)
+
+        expected_interface = models.Interface.find(allocated_ip.interface_id)
+        self.assertEqual(response.json['interface'],
+                         self._get_iface_data(expected_interface))
+
+    def test_show_an_interface_raises_404_for_non_existant_interface(self):
+        provider_block = factory_models.IpBlockFactory(tenant_id="RAX",
+                                                       network_id="net_id")
+        noise_ip = self._setup_interface_and_ip("instance_id",
+                                                "leasee_tenant",
+                                                 provider_block)
+
+        response = self.app.get("/ipam/instances/instance_id/interfaces/"
+                                "bad_iface_id", status="*")
+
+        self.assertErrorResponse(response,
+                                 webob.exc.HTTPNotFound,
+                                 "Interface Not Found")
+
+    def test_show_an_interface_with_tenant_id(self):
+        provider_block = factory_models.IpBlockFactory(tenant_id="RAX",
+                                                       network_id="net_id")
+        allocated_ip = self._setup_interface_and_ip("instance_id",
+                                                    "leasee_tenant",
+                                                    provider_block)
+        response = self.app.get("/ipam/tenants/leasee_tenant/"
+                                "instances/instance_id/interfaces/%s" %
+                                allocated_ip.interface_id)
+
+        expected_interface = models.Interface.find(allocated_ip.interface_id)
+        self.assertEqual(response.json['interface'],
+                         self._get_iface_data(expected_interface))
+
+    def test_show_an_inteface_fails_for_wrong_tenant_id(self):
+        provider_block = factory_models.IpBlockFactory(tenant_id="RAX",
+                                                       network_id="net_id")
+        allocated_ip = self._setup_interface_and_ip("instance_id",
+                                                    "leasee_tenant",
+                                                    provider_block)
+        response = self.app.get("/ipam/tenants/wrong_tenant_id/"
+                                "instances/instance_id/interfaces/%s" %
+                                allocated_ip.interface_id, status="*")
+
+        self.assertErrorResponse(response, webob.exc.HTTPNotFound,
+                                 "Interface Not Found")
+
+    def test_delete_an_interface(self):
+        provider_block = factory_models.IpBlockFactory(tenant_id="RAX",
+                                                       network_id="net_id")
+        allocated_ip = self._setup_interface_and_ip("instance_id",
+                                                    "leasee_tenant",
+                                                    provider_block)
+
+        self.app.delete("/ipam/instances/instance_id/interfaces/%s" %
+                        allocated_ip.interface_id)
+        self.assertIsNone(models.Interface.get(allocated_ip.interface_id))
+        self.assertTrue(
+                models.IpAddress.get(allocated_ip.id).marked_for_deallocation)
+
+    def test_delete_an_interface_raises_404_for_non_existant_interface(self):
+        provider_block = factory_models.IpBlockFactory(tenant_id="RAX",
+                                                       network_id="net_id")
+        noise_ip = self._setup_interface_and_ip("instance_id",
+                                                "leasee_tenant",
+                                                 provider_block)
+
+        response = self.app.delete("/ipam/instances/instance_id/interfaces/"
+                                   "bad_iface_id", status="*")
+
+        self.assertErrorResponse(response,
+                                 webob.exc.HTTPNotFound,
+                                 "Interface Not Found")
+
     def _get_iface_data(self, iface):
         return unit.sanitize(views.InterfaceConfigurationView(iface).data())
 
@@ -2400,6 +2510,108 @@ class TestInstanceInterfacesController(ControllerTestBase):
         iface = factory_models.InterfaceFactory(device_id=device_id,
                                                 tenant_id=tenant_of_device)
         return _allocate_ip(block, interface=iface)
+
+
+class TestInstanceInterfaceIpsController(ControllerTestBase):
+
+    def setUp(self):
+        super(TestInstanceInterfaceIpsController, self).setUp()
+        self.block = factory_models.IpBlockFactory(tenant_id="RAX",
+                                                   network_id="net_id",
+                                                   cidr="10.1.1.1/29")
+        self.iface = factory_models.InterfaceFactory(device_id="instance_id",
+                                                     tenant_id="leasee_tenant")
+
+    def test_create(self):
+        path = ("/ipam/instances/instance_id/"
+                "interfaces/%s/ip_addresses" % self.iface.id)
+        body = {'network':
+                  {'id': self.block.network_id,
+                   'tenant_id': self.block.tenant_id,
+                   'address': "10.1.1.3"
+                   }
+               }
+        response = self.appv1_0.post_json(path, body)
+
+        created_address = models.IpAddress.find_by(address="10.1.1.3")
+        self.assertEqual(created_address.interface_id, self.iface.id)
+        self.assertEqual(created_address.ip_block_id, self.block.id)
+        expected_ip_data = unit.sanitize(
+                views.IpConfigurationView(created_address).data())
+        self.assertEqual(response.json['ip_addresses'], expected_ip_data)
+
+    def test_create_raises_404_for_non_existant_interface(self):
+        path = ("/ipam/instances/instance_id/"
+                "interfaces/bad_iface_id/ip_addresses")
+        body = {'network':
+                  {'id': self.block.network_id,
+                   'tenant_id': self.block.tenant_id,
+                   'address': "10.1.1.3"
+                   }
+               }
+
+        response = self.appv1_0.post_json(path, body, status="*")
+
+        self.assertErrorResponse(response,
+                                 webob.exc.HTTPNotFound,
+                                 "Interface Not Found")
+
+    def test_create_raises_404_for_non_existant_network(self):
+        path = ("/ipam/instances/instance_id/"
+                "interfaces/%s/ip_addresses" % self.iface.id)
+        body = {'network':
+                  {'id': "bad_net_id",
+                   'tenant_id': self.block.tenant_id,
+                   'address': "10.1.1.3"
+                   }
+               }
+
+        response = self.appv1_0.post_json(path, body, status="*")
+
+        self.assertErrorResponse(response,
+                                 webob.exc.HTTPNotFound,
+                                 "Network bad_net_id not found")
+
+    def test_delete(self):
+        ip = self.block.allocate_ip(interface=self.iface)
+        url = ("/ipam/instances/instance_id/"
+               "interfaces/%s/ip_addresses/%s" % (self.iface.id, ip.address))
+
+        self.appv1_0.delete(url)
+
+        self.assertTrue(models.IpAddress.find(ip.id).marked_for_deallocation)
+
+    def test_delete_raises_404_for_non_existant_interface(self):
+        url = ("/ipam/instances/instance_id/"
+               "interfaces/bad_iface_id/ip_addresses/10.1.1.1")
+
+        response = self.appv1_0.delete(url, status="*")
+
+        self.assertErrorResponse(response,
+                                 webob.exc.HTTPNotFound,
+                                 "Interface Not Found")
+
+    def test_delete_raises_404_for_unplugged_interface(self):
+        url = ("/ipam/instances/instance_id/"
+               "interfaces/%s/ip_addresses/22.22.22.22" % self.iface.id)
+
+        response = self.appv1_0.delete(url, status="*")
+
+        self.assertErrorResponse(response,
+                                 webob.exc.HTTPNotFound,
+                                 "IpAddress Not Found")
+
+    def test_delete_raises_404_for_non_existant_ip(self):
+        self.block.allocate_ip(interface=self.iface)
+        url = ("/ipam/instances/instance_id/"
+               "interfaces/%s/ip_addresses/22.22.22.22" % self.iface.id)
+
+        response = self.appv1_0.delete(url, status="*")
+
+        err_msg = ("IpAddress with {'address': u'22.22.22.22', "
+                   "'interface_id': u'%s'} for network net_id not found"
+                   % self.iface.id)
+        self.assertErrorResponse(response, webob.exc.HTTPNotFound, err_msg)
 
 
 class TestMacAddressRangesController(ControllerTestBase):

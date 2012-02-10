@@ -28,8 +28,8 @@ class TestExtensions(unittest.TestCase):
 
     def test_extension_loads_with_melange_xmlns(self):
         options = {'config_file': tests.test_config_file()}
-        conf, app = config.Config.load_paste_app('melangeapi',
-                                          options, None)
+        conf, app = config.Config.load_paste_app('melangeapi_v0_1',
+                                                 options, None)
         test_app = webtest.TestApp(app)
 
         response = test_app.get("/extensions.xml")
