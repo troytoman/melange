@@ -1241,6 +1241,82 @@ Error   - 400 Bad Request [When required parameters are not present or field val
       }
     }
 
+Create a single interface for an instance and allocate an ip for the interface
+-------------------------------------------------------------------------------
+
+    ====== ========================================================================================= ==============================================================================================================
+    Verb   URI                                                                                       Description
+    ====== ========================================================================================= ==============================================================================================================
+    POST    /ipam/instances/{instance_id}/interfaces                                                 Create an interface with the instance_id and allocate a mac. If a network is provided, allocate an ip as well. 
+    ====== ========================================================================================= ==============================================================================================================
+
+**Params:**
+
+{instance_id} in URI can be a uuid, any string accepted. Is an id pointing to the instance(or any other device) on which the ip will be used.
+
+**Params Body Example:**
+
+::
+
+    {
+      "interface": {
+        "tenant_id": "tnt",
+        "mac_address": "null"
+         "network": {"id": "public_net1", "tenant_id": "RAX"}
+       }
+    }
+
+'tenant_id' : The 'lessee' tenant for whom the interface is being created.
+
+'mac_address' : Optional, can be provided if Melange is not in charge of generating mac addresses.
+
+'network' : all network and ip related details. The tenant_id in the network property is the network owner
+
+**Response Codes:**
+
+Normal Response code: 200
+
+Error   - 422 Unprocessable Entity [If ip address cannot be allocated from Network]
+
+Error - 404 Not Found [When network for a given network_id and tenant_id is not found]
+
+Error   - 409 Conflict [If the given address is already allocated]
+
+Error   - 400 Bad Request [When required parameters are not present or field validation fails]
+
+**JSON Response Example:**
+
+::
+
+    {
+      "interface" : {
+          "created_at": "2011-12-01T13:18:37",
+          "device_id": "instance",
+          "id": "virt_iface",
+          "ip_addresses": [
+              {
+                  "address": "10.0.0.2",
+                  "id": "7615ca4a-787d-46b0-8a8c-3a90e3e6cf2c",
+                  "interface_id": "virt_iface",
+                  "ip_block": {
+                      "broadcast": "10.0.0.255",
+                      "cidr": "10.0.0.0/24",
+                      "dns1": "8.8.8.8",
+                      "dns2": "8.8.4.4",
+                      "gateway": "10.0.0.1",
+                      "id": "9c4c3dfd-c707-45bd-8626-9c369b1b9460",
+                      "ip_routes": [],
+                      "netmask": "255.255.255.0"
+                  },
+                  "version": 4
+              }
+          ],
+          "mac_address": null,
+          "tenant_id": "tnt_id",
+          "updated_at": "2011-12-01T13:18:37"
+       }
+    }
+
 Get details of all interfaces on the instance
 ---------------------------------------------
 
@@ -1303,6 +1379,60 @@ Error - 404 Not Found [When interface is not found]
       }
     }
 
+Get details of a single interface on the instance
+--------------------------------------------------
+
+    ====== ======================================================================================== ====================================================================
+    Verb   URI                                                                                      Description
+    ====== ======================================================================================== ====================================================================
+    GET    /ipam/instances/{instance_id}/interfaces/                                                Get a single interface's details along with all ips allocated on it.
+    ====== ======================================================================================== ====================================================================
+
+**Params:**
+
+None
+
+**Response Codes:**
+
+Normal Response code: 200
+
+
+Error - 404 Not Found [When interface is not found]
+
+**JSON Response Example:**
+
+::
+
+    {
+
+      "interface" : {
+          "created_at": "2011-12-01T13:18:37",
+          "device_id": "instance",
+          "id": "virt_iface",
+          "ip_addresses": [
+              {
+                  "address": "10.0.0.2",
+                  "id": "7615ca4a-787d-46b0-8a8c-3a90e3e6cf2c",
+                  "interface_id": "virt_iface",
+                  "ip_block": {
+                      "broadcast": "10.0.0.255",
+                      "cidr": "10.0.0.0/24",
+                      "dns1": "8.8.8.8",
+                      "dns2": "8.8.4.4",
+                      "gateway": "10.0.0.1",
+                      "id": "9c4c3dfd-c707-45bd-8626-9c369b1b9460",
+                      "ip_routes": [],
+                      "netmask": "255.255.255.0"
+                  },
+                  "version": 4
+              }
+          ],
+          "mac_address": null,
+          "tenant_id": "tnt_id",
+          "updated_at": "2011-12-01T13:18:37"
+       }
+    }
+
 Delete all interfaces of the instance
 -------------------------------------
 
@@ -1323,6 +1453,114 @@ Normal Response code: 200
 
 Error - 404 Not Found [When interface is not found]
 
+
+Delete a single interfaces of the instance
+------------------------------------------
+
+    ====== ======================================================================================== =================================================================================
+    Verb   URI                                                                                      Description
+    ====== ======================================================================================== =================================================================================
+    DELETE /ipam/instances/{instance_id}/interfaces/{interface_id}                                  Delete a single interface of the instance and all ips allocated on the interface.
+    ====== ======================================================================================== =================================================================================
+
+**Params:**
+
+None
+
+**Response Codes:**
+
+Normal Response code: 200
+
+
+Error - 404 Not Found [When interface is not found]
+
+
+Instance Interface Ips
+===========================
+
+Allocate an address to an interface
+------------------------------------
+
+    ====== ========================================================================================= ============================================================================================
+    Verb   URI                                                                                       Description
+    ====== ========================================================================================= ============================================================================================
+    POST    /ipam/instances/{instance_id}/interfaces/{interface_id}/ip_addresses                     Allocate an IPv4 and IPv6 address to the interface based on the network details in the body.
+    ====== ========================================================================================= ============================================================================================
+
+**Params:**
+
+{instance_id} in URI can be a uuid, any string accepted. Is an id pointing to the instance(or any other device) on which the ip will be used.
+{interface_id} in URI is the id of an existing interface in Melange
+
+**Params Body Example:**
+
+::
+
+    {
+      "network": {
+        "id": "public_net1",
+        "tenant_id": "RAX",
+        "addresses":["10.1.1.1"]}
+    }
+
+'network' : all network and ip related details. The tenant_id in this context is of the network owner.
+
+**Response Codes:**
+
+Normal Response code: 200
+
+Error   - 422 Unprocessable Entity [If ip address cannot be allocated from Network]
+
+Error - 404 Not Found [When network for a given network_id and tenant_id is not found]
+
+Error   - 409 Conflict [If the given address is already allocated]
+
+Error   - 400 Bad Request [When required parameters are not present or field validation fails]
+
+**JSON Response Example:**
+
+::
+
+    {
+        "ip_addresses": [
+            {
+                "address": "192.168.1.0",
+                "id": "e9394108-4276-4965-8621-52bfa00464b5",
+                "interface_id": "123",
+                "ip_block": {
+                    "broadcast": "192.168.1.255",
+                    "cidr": "192.168.1.0/24",
+                    "dns1": "8.8.8.8",
+                    "dns2": "8.8.4.4",
+                    "gateway": "192.168.1.1",
+                    "id": "d14b95da-261f-4b7e-90a1-0e2902c5f454",
+                    "ip_routes": [],
+                    "netmask": "255.255.255.0"
+                },
+                "version": 4
+            }
+        ]
+    }
+
+Deallocate all IpAddresses on an Interface
+--------------------------------------------------
+
+    ====== ======================================================================================== =========================================================
+    Verb   URI                                                                                      Description
+    ====== ======================================================================================== =========================================================
+    DELETE /ipam/instance/{instance_id}/interfaces/{interface_id}/ip_addresses                      Delete all allocated IpAddresses on the interface 
+    ====== ======================================================================================== =========================================================
+
+**Params:**
+
+{instance_id} in URI can be a uuid, any string accepted. Is an id pointing to the instance(or any other device) on which the ip will be used.
+{interface_id} in URI is the id of an existing interface in Melange
+
+**Response Codes:**
+
+Normal Response code: 200
+
+Error - 404 Not Found [When network for a given network_id and tenant_id is not found]
 
 IP allocations in a Network
 ===========================
