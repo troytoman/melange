@@ -61,13 +61,13 @@ class Commands(object):
         self.conf = conf
 
     def db_sync(self, repo_path=None):
-        db_api.db_sync(self.conf, repo_path=None)
+        db_api.db_sync(self.conf, repo_path=repo_path)
 
     def db_upgrade(self, version=None, repo_path=None):
-        db_api.db_upgrade(self.conf, version, repo_path=None)
+        db_api.db_upgrade(self.conf, version, repo_path=repo_path)
 
     def db_downgrade(self, version, repo_path=None):
-        db_api.db_downgrade(self.conf, version, repo_path=None)
+        db_api.db_downgrade(self.conf, version, repo_path=repo_path)
 
     def execute(self, command_name, *args):
         if self.has(command_name):
