@@ -82,6 +82,7 @@ def _ip_data(ip, block):
             'dns1': block.dns1,
             'dns2': block.dns2,
             'ip_routes': [],
+            'tenant_id': block.tenant_id,
             },
         }
 

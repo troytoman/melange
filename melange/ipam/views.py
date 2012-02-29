@@ -53,6 +53,7 @@ class IpConfigurationView(object):
             'netmask': block.netmask,
             'dns1': block.dns1,
             'dns2': block.dns2,
+            'tenant_id': block.tenant_id,
             }
 
     def _route_data(self, route):
