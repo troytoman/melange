@@ -39,6 +39,7 @@ from melange import version
 from melange.common import config
 from melange.common import utils
 from melange.db import db_api
+from melange.ipam import service
 
 
 def create_options(parser):
@@ -69,11 +70,23 @@ class Commands(object):
     def db_downgrade(self, version, repo_path=None):
         db_api.db_downgrade(self.conf, version, repo_path=repo_path)
 
+    def routes(self, version):
+        version = version.split('=')[-1].upper().replace('.', '')
+        if not version.startswith('V'):
+            version = 'V' + version
+
+        api = getattr(service, 'API' + version, None)
+        if not api:
+            print _('Could not import Router %s') % api
+
+        for route in api().map.matchlist:
+            print route.routepath, route.conditions['method']
+
     def execute(self, command_name, *args):
         if self.has(command_name):
             return getattr(self, command_name)(*args)
 
-    _commands = ['db_sync', 'db_upgrade', 'db_downgrade']
+    _commands = ['db_sync', 'db_upgrade', 'db_downgrade', 'routes']
 
     @classmethod
     def has(cls, command_name):

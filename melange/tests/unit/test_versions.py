@@ -31,12 +31,18 @@ class TestVersionsController(tests.BaseTest):
 
     def test_versions_index(self):
         response = self.test_app.get("/")
-        link = [{'href': "http://localhost/v0.1", 'rel': 'self'}]
+        v01link = [{'href': "http://localhost/v0.1", 'rel': 'self'}]
+        v10link = [{'href': "http://localhost/v1.0", 'rel': 'self'}]
         self.assertEqual(response.json, {'versions':
                                          [{
-                                             'status':'CURRENT',
+                                             'status':'DEPRECATED',
                                              'name': 'v0.1',
-                                             'links': link,
+                                             'links': v01link,
+                                             },
+                                          {
+                                             'status':'CURRENT',
+                                             'name': 'v1.0',
+                                             'links': v10link,
                                              }]
                                          })
 
@@ -48,9 +54,14 @@ class TestVersionsController(tests.BaseTest):
         self.assertEqual(response.xml.tag, 'versions')
         self.assertEqual(response.body,
 """<versions>
-    <version name="v0.1" status="CURRENT">
+    <version name="v0.1" status="DEPRECATED">
         <links>
             <link href="http://localhost/v0.1" rel="self"/>
+        </links>
+    </version>
+    <version name="v1.0" status="CURRENT">
+        <links>
+            <link href="http://localhost/v1.0" rel="self"/>
         </links>
     </version>
 </versions>

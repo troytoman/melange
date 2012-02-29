@@ -568,106 +568,11 @@ class InterfaceAllowedIpsController(BaseController):
         interface.disallow_ip(ip)
 
 
-class APIV01(wsgi.Router):
+class APICommon(wsgi.Router):
 
     def __init__(self):
         mapper = routes.Mapper()
-        super(APIV01, self).__init__(mapper)
-        self._networks_maper(mapper)
-        self._interface_ip_allocations_mapper(mapper)
-        self._interface_mapper(mapper)
-        self._allowed_ips_mapper(mapper)
-        APICommon(mapper)
-
-    def _networks_maper(self, mapper):
-        resource = NetworksController().create_resource()
-        path = "/ipam/tenants/{tenant_id}/networks/{network_id}"
-        mapper.resource("networks", path, controller=resource)
-
-    def _interface_ip_allocations_mapper(self, mapper):
-        path = ("/ipam/tenants/{tenant_id}/networks"
-                "/{network_id}/interfaces/{interface_id}")
-        resource = InterfaceIpAllocationsController().create_resource()
-        with mapper.submapper(controller=resource, path_prefix=path) as submap:
-            _connect(submap, "/ip_allocations", action='create',
-                          conditions=dict(method=['POST']))
-            _connect(submap,
-                          "/ip_allocations",
-                          action='index',
-                          conditions=dict(method=['GET']))
-            _connect(submap, "/ip_allocations", action='bulk_delete',
-                          conditions=dict(method=['DELETE']))
-
-    def _interface_mapper(self, mapper):
-        interface_res = InterfacesController().create_resource()
-        path = "/ipam/interfaces"
-        _connect(mapper,
-                      "/ipam/tenants/{tenant_id}/"
-                      "interfaces/{virtual_interface_id}",
-                      controller=interface_res,
-                      action="show",
-                      conditions=dict(method=['GET']))
-        _connect(mapper,
-                      "/ipam/interfaces/{virtual_interface_id}",
-                      controller=interface_res,
-                      action="delete",
-                      conditions=dict(method=['DELETE']))
-        mapper.resource("interfaces", path, controller=interface_res)
-
-    def _allowed_ips_mapper(self, mapper):
-        interface_allowed_ips = InterfaceAllowedIpsController()
-        mapper.connect("/ipam/tenants/{tenant_id}/"
-                       "interfaces/{interface_id}/allowed_ips/{address:.+?}",
-                       action="delete",
-                       controller=interface_allowed_ips.create_resource(),
-                       conditions=dict(method=["DELETE"]))
-        mapper.connect("/ipam/tenants/{tenant_id}/"
-                       "interfaces/{interface_id}/allowed_ips/{address:.+?}",
-                       action="show",
-                       controller=interface_allowed_ips.create_resource(),
-                       conditions=dict(method=["GET"]))
-        mapper.resource("allowed_ips",
-                        "/allowed_ips",
-                        controller=interface_allowed_ips.create_resource(),
-                        path_prefix=("/ipam/tenants/{tenant_id}/"
-                                     "interfaces/{interface_id}"))
-
-    @classmethod
-    def app_factory(cls, global_conf, **local_conf):
-        return APIV01()
-
-
-class APIV10(wsgi.Router):
-
-    def __init__(self):
-        mapper = routes.Mapper()
-        super(APIV10, self).__init__(mapper)
-        APICommon(mapper)
-        self._instance_interface_ips_mapper(mapper)
-
-    def _instance_interface_ips_mapper(self, mapper):
-        res = InstanceInterfaceIpsController().create_resource()
-        path_prefix = ("/ipam/instances/{device_id}/"
-                       "interfaces/{interface_id}")
-        with mapper.submapper(controller=res,
-                              path_prefix=path_prefix) as submap:
-            _connect(submap,
-                     "/ip_addresses/{address:.+?}",
-                     action="delete",
-                     conditions=dict(method=["DELETE"]))
-        mapper.resource("ip_addresses",
-                        "/ip_addresses",
-                        controller=res,
-                        path_prefix=path_prefix)
-
-    @classmethod
-    def app_factory(cls, global_conf, **local_conf):
-        return APIV10()
-
-
-class APICommon():
-
-    def __init__(self, mapper):
+        super(APICommon, self).__init__(mapper)
         self._natting_mapper(mapper,
                              "inside_globals",
                              InsideGlobalsController().create_resource())
@@ -814,6 +719,98 @@ class APICommon():
                           "%(nat_type)s/{%(nat_type)s_address:.+?}" % locals(),
                           action="delete",
                           conditions=dict(method=["DELETE"]))
+
+
+class APIV01(APICommon):
+    def __init__(self):
+        super(APIV01, self).__init__()
+        self._networks_maper(self.map)
+        self._interface_ip_allocations_mapper(self.map)
+        self._interface_mapper(self.map)
+        self._allowed_ips_mapper(self.map)
+
+    def _networks_maper(self, mapper):
+        resource = NetworksController().create_resource()
+        path = "/ipam/tenants/{tenant_id}/networks/{network_id}"
+        mapper.resource("networks", path, controller=resource)
+
+    def _interface_ip_allocations_mapper(self, mapper):
+        path = ("/ipam/tenants/{tenant_id}/networks"
+                "/{network_id}/interfaces/{interface_id}")
+        resource = InterfaceIpAllocationsController().create_resource()
+        with mapper.submapper(controller=resource, path_prefix=path) as submap:
+            _connect(submap, "/ip_allocations", action='create',
+                          conditions=dict(method=['POST']))
+            _connect(submap,
+                          "/ip_allocations",
+                          action='index',
+                          conditions=dict(method=['GET']))
+            _connect(submap, "/ip_allocations", action='bulk_delete',
+                          conditions=dict(method=['DELETE']))
+
+    def _interface_mapper(self, mapper):
+        interface_res = InterfacesController().create_resource()
+        path = "/ipam/interfaces"
+        _connect(mapper,
+                      "/ipam/tenants/{tenant_id}/"
+                      "interfaces/{virtual_interface_id}",
+                      controller=interface_res,
+                      action="show",
+                      conditions=dict(method=['GET']))
+        _connect(mapper,
+                      "/ipam/interfaces/{virtual_interface_id}",
+                      controller=interface_res,
+                      action="delete",
+                      conditions=dict(method=['DELETE']))
+        mapper.resource("interfaces", path, controller=interface_res)
+
+    def _allowed_ips_mapper(self, mapper):
+        interface_allowed_ips = InterfaceAllowedIpsController()
+        mapper.connect("/ipam/tenants/{tenant_id}/"
+                       "interfaces/{interface_id}/allowed_ips/{address:.+?}",
+                       action="delete",
+                       controller=interface_allowed_ips.create_resource(),
+                       conditions=dict(method=["DELETE"]))
+        mapper.connect("/ipam/tenants/{tenant_id}/"
+                       "interfaces/{interface_id}/allowed_ips/{address:.+?}",
+                       action="show",
+                       controller=interface_allowed_ips.create_resource(),
+                       conditions=dict(method=["GET"]))
+        mapper.resource("allowed_ips",
+                        "/allowed_ips",
+                        controller=interface_allowed_ips.create_resource(),
+                        path_prefix=("/ipam/tenants/{tenant_id}/"
+                                     "interfaces/{interface_id}"))
+
+    @classmethod
+    def app_factory(cls, global_conf, **local_conf):
+        return APIV01()
+
+
+class APIV10(APICommon):
+
+    def __init__(self):
+        super(APIV10, self).__init__()
+        self._instance_interface_ips_mapper(self.map)
+
+    def _instance_interface_ips_mapper(self, mapper):
+        res = InstanceInterfaceIpsController().create_resource()
+        path_prefix = ("/ipam/instances/{device_id}/"
+                       "interfaces/{interface_id}")
+        with mapper.submapper(controller=res,
+                              path_prefix=path_prefix) as submap:
+            _connect(submap,
+                     "/ip_addresses/{address:.+?}",
+                     action="delete",
+                     conditions=dict(method=["DELETE"]))
+        mapper.resource("ip_addresses",
+                        "/ip_addresses",
+                        controller=res,
+                        path_prefix=path_prefix)
+
+    @classmethod
+    def app_factory(cls, global_conf, **local_conf):
+        return APIV10()
 
 
 def _connect(mapper, path, *args, **kwargs):
