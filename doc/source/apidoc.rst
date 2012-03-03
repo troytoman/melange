@@ -187,8 +187,8 @@ Normal Response code: 200
                 "type": "private",
                 "updated_at": "2011-12-01T09:42:13"
             },
-         ] 
-    
+         ]
+
     }
 
 
@@ -1096,7 +1096,7 @@ None
 Normal Response code: 200
 
 
-Error - 404 Not Found [When interface is not found] 
+Error - 404 Not Found [When interface is not found]
 
 **JSON Response Example:**
 
@@ -1149,7 +1149,7 @@ None
 Normal Response code: 200
 
 
-Error - 404 Not Found [When interface is not found] 
+Error - 404 Not Found [When interface is not found]
 
 Instance Interfaces
 ===========================
@@ -1247,7 +1247,7 @@ Create a single interface for an instance and allocate an ip for the interface
     ====== ========================================================================================= ==============================================================================================================
     Verb   URI                                                                                       Description
     ====== ========================================================================================= ==============================================================================================================
-    POST    /ipam/instances/{instance_id}/interfaces                                                 Create an interface with the instance_id and allocate a mac. If a network is provided, allocate an ip as well. 
+    POST    /ipam/instances/{instance_id}/interfaces                                                 Create an interface with the instance_id and allocate a mac. If a network is provided, allocate an ip as well.
     ====== ========================================================================================= ==============================================================================================================
 
 **Params:**
@@ -1548,7 +1548,7 @@ Deallocate all IpAddresses on an Interface
     ====== ======================================================================================== =========================================================
     Verb   URI                                                                                      Description
     ====== ======================================================================================== =========================================================
-    DELETE /ipam/instance/{instance_id}/interfaces/{interface_id}/ip_addresses                      Delete all allocated IpAddresses on the interface 
+    DELETE /ipam/instance/{instance_id}/interfaces/{interface_id}/ip_addresses                      Delete all allocated IpAddresses on the interface
     ====== ======================================================================================== =========================================================
 
 **Params:**
@@ -1906,17 +1906,17 @@ Normal Response code: 200
 ::
 
     {
-        "policies": [                                                                                                                    
-            {                                                                                                                            
-                "created_at": "2011-12-01T09:06:10",                                                                                     
-                "description": "policy_desc",                                                                                            
-                "id": "2f730874-2088-4f91-87fb-63792c753971",                                                                            
-                "name": "rax_policy",                                                                                                    
-                "tenant_id": "RAX",                                                                                                      
-                "updated_at": "2011-12-01T09:06:10"                                                                                      
-            }                                                                                                                            
-        ]                                                                                                                                
-    } 
+        "policies": [
+            {
+                "created_at": "2011-12-01T09:06:10",
+                "description": "policy_desc",
+                "id": "2f730874-2088-4f91-87fb-63792c753971",
+                "name": "rax_policy",
+                "tenant_id": "RAX",
+                "updated_at": "2011-12-01T09:06:10"
+            }
+        ]
+    }
 
 Get details of a Tenant's IP Policy
 -----------------------------------
@@ -2178,7 +2178,7 @@ Create a unusable ip range in tenant's policy
 Normal Response code: 201
 
 Error   - 404 Not Found [When Policy  doesn't exist]
-			
+
 
 **JSON Response Example:**
 
@@ -2225,7 +2225,7 @@ Update details of a policy's unusable ip range
 Normal Response code: 200
 
 Error   - 404 Not Found [When Policy or IP range doesn't exist]
-				
+
 
 **JSON Response Example:**
 
@@ -2261,7 +2261,7 @@ None
 Normal Response code: 200
 
 Error   - 404 Not Found [When Policy or IP range doesn't exist]
-				
+
 
 Tenant Policy Unusable Ip Octets
 ================================
