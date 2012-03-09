@@ -25,15 +25,15 @@ import os
 import random
 import shlex
 import sys
-import types
 
 from eventlet import greenthread
 from eventlet.green import subprocess
+import iso8601
 
 from melange.openstack.common import exception
 
 
-TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 LOG = logging.getLogger(__name__)
 
 
@@ -60,9 +60,9 @@ def bool_from_string(subject):
 
     Useful for JSON-decoded stuff and config file parsing
     """
-    if isinstance(subject, types.BooleanType):
+    if isinstance(subject, bool):
         return subject
-    if isinstance(subject, types.StringTypes):
+    if isinstance(subject, basestring):
         if subject.strip().lower() in ('true', 'on', '1'):
             return True
     return False
@@ -120,8 +120,9 @@ def execute(*cmd, **kwargs):
             _returncode = obj.returncode  # pylint: disable=E1101
             if _returncode:
                 LOG.debug(_('Result was %s') % _returncode)
-                if type(check_exit_code) == types.IntType \
-                        and _returncode != check_exit_code:
+                if (isinstance(check_exit_code, int) and
+                    not isinstance(check_exit_code, bool) and
+                    _returncode != check_exit_code):
                     (stdout, stderr) = result
                     raise exception.ProcessExecutionError(
                             exit_code=_returncode,
@@ -163,13 +164,29 @@ def import_object(import_str):
 
 
 def isotime(at=None):
+    """Stringify time in ISO 8601 format"""
     if not at:
         at = datetime.datetime.utcnow()
-    return at.strftime(TIME_FORMAT)
+    str = at.strftime(TIME_FORMAT)
+    tz = at.tzinfo.tzname(None) if at.tzinfo else 'UTC'
+    str += ('Z' if tz == 'UTC' else tz)
+    return str
 
 
 def parse_isotime(timestr):
-    return datetime.datetime.strptime(timestr, TIME_FORMAT)
+    """Parse time from ISO 8601 format"""
+    try:
+        return iso8601.parse_date(timestr)
+    except iso8601.ParseError as e:
+        raise ValueError(e.message)
+    except TypeError as e:
+        raise ValueError(e.message)
+
+
+def normalize_time(timestamp):
+    """Normalize time in arbitrary timezone to UTC"""
+    offset = timestamp.utcoffset()
+    return timestamp.replace(tzinfo=None) - offset if offset else timestamp
 
 
 def utcnow():
