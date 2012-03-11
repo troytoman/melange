@@ -17,8 +17,10 @@
 
 import contextlib
 import logging
+import sqlalchemy as sql
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
+from sqlalchemy.exc import DisconnectionError
 from sqlalchemy.orm import sessionmaker
 
 from melange import ipam
@@ -53,17 +55,44 @@ def configure_sqlalchemy_log(options):
         logger.setLevel(logging.INFO)
 
 
+class MySQLPingListener(object):
+
+    """
+    Ensures that MySQL connections checked out of the
+    pool are alive.
+
+    Borrowed from:
+    http://groups.google.com/group/sqlalchemy/msg/a4ce563d802c929f
+    """
+
+    def checkout(self, dbapi_con, con_record, con_proxy):
+        try:
+            dbapi_con.cursor().execute('select 1')
+        except dbapi_con.OperationalError, ex:
+            if ex.args[0] in (2006, 2013, 2014, 2045, 2055):
+                LOG.warn('Got mysql server has gone away: %s', ex)
+                raise DisconnectionError("Database server went away")
+            else:
+                raise
+
+
 def _create_engine(options):
+    connection_dict = sql.engine.url.make_url(options['sql_connection'])
     engine_args = {
-        "pool_recycle": config.get_option(options,
+        'pool_recycle': config.get_option(options,
                                           'sql_idle_timeout',
                                           type='int',
                                           default=3600),
-        "echo": config.get_option(options,
+        'echo': config.get_option(options,
                                   'sql_query_log',
                                   type='bool',
                                   default=False),
+        'convert_unicode': True,
     }
+
+    if 'mysql' in connection_dict.drivername:
+        engine_args['listeners'] = [MySQLPingListener()]
+
     LOG.info("Creating SQLAlchemy engine with args: %s" % engine_args)
     return create_engine(options['sql_connection'], **engine_args)
 
