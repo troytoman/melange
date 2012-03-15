@@ -1002,6 +1002,24 @@ class TestAllocatedIpAddressController(ControllerTestBase):
         self.assertItemsEqual(response.json['ip_addresses'],
                               _data([tnt1_device1_ip1, tnt1_device1_ip2]))
 
+    def test_index_returns_allocated_ips_by_address(self):
+        block1 = factory_models.IpBlockFactory(cidr="10.0.0.0/24",
+                                               tenant_id="1")
+        block2 = factory_models.IpBlockFactory(cidr="20.0.0.0/24",
+                                               tenant_id="2")
+        interface1 = factory_models.InterfaceFactory(tenant_id="tnt1")
+        interface2 = factory_models.InterfaceFactory(tenant_id="tnt2")
+
+        tenant1_ip1 = _allocate_ip(block1, interface=interface1)
+        tenant1_ip2 = _allocate_ip(block2, interface=interface1)
+        tenant2_ip1 = _allocate_ip(block2, interface=interface2)
+
+        response = self.app.get("/ipam/allocated_ip_addresses?"
+                                "address=" + tenant1_ip1.address)
+
+        self.assertItemsEqual(response.json['ip_addresses'],
+                              _data([tenant1_ip1]))
+
     def test_index_doesnt_return_soft_deallocated_ips(self):
         block = factory_models.IpBlockFactory()
         interface = factory_models.InterfaceFactory(tenant_id="tnt1")
