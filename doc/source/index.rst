@@ -14,10 +14,8 @@
       License for the specific language governing permissions and limitations
       under the License.
 
-Welcome to Skeleton's documentation!
+Welcome to Melange's documentation!
 ====================================
-
-Description of Skeleton project
 
 API Docs
 ========

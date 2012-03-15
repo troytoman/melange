@@ -32,10 +32,10 @@ import sys
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.append([os.path.abspath('../melange'),
-    os.path.abspath('..'),
-    os.path.abspath('../bin')
-    ])
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MELANGE_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
+sys.path.insert(0, MELANGE_DIR)
 
 # -- General configuration ---------------------------------------------------
 
@@ -242,7 +242,7 @@ latex_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'python': ('http://docs.python.org/', None),
-                       'dashboard': ('http://dashboard.openstack.org', None),
+                       'horizon': ('http://horizon.openstack.org', None),
                        'glance': ('http://glance.openstack.org', None),
                        'keystone': ('http://keystone.openstack.org', None),
                        'nova': ('http://nova.openstack.org', None),
