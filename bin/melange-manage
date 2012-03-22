@@ -35,6 +35,8 @@ possible_topdir = os.path.normpath(os.path.join(os.path.abspath(sys.argv[0]),
 if os.path.exists(os.path.join(possible_topdir, 'melange', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
+from melange import ipv4
+from melange import mac
 from melange import version
 from melange.common import config
 from melange.common import utils
@@ -61,13 +63,20 @@ class Commands(object):
     def __init__(self, conf):
         self.conf = conf
 
-    def db_sync(self, repo_path=None):
-        db_api.db_sync(self.conf, repo_path=repo_path)
+    def _db_connect(self):
+        conf, app = config.Config.load_paste_app('melange', options, args)
+        db_api.configure_db(conf, ipv4.plugin(), mac.plugin())
+
+    def db_sync(self):
+        self._db_connect()
+        db_api.db_sync(self.conf)
 
     def db_upgrade(self, version=None, repo_path=None):
+        self._db_connect()
         db_api.db_upgrade(self.conf, version, repo_path=repo_path)
 
     def db_downgrade(self, version, repo_path=None):
+        self._db_connect()
         db_api.db_downgrade(self.conf, version, repo_path=repo_path)
 
     def routes(self, version):
@@ -127,6 +136,7 @@ if __name__ == '__main__':
     try:
         conf = config.Config.load_paste_config('melange', options, args)
         config.setup_logging(options, conf)
+        db_api.configure_db(conf, ipv4.plugin(), mac.plugin())
 
         command_name = args.pop(0)
         Commands(conf).execute(command_name, *args)
