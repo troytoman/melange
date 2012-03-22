@@ -22,7 +22,7 @@ except ImportError:
                     'revision_id': 'LOCALREVISION',
                     'revno': 0}
 
-MELANGE_VERSION = ['2012', '1']
+MELANGE_VERSION = ['2012', '2']
 YEAR, COUNT = MELANGE_VERSION
 
 FINAL = False   # This becomes true at Release Candidate time
