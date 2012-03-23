@@ -25,7 +25,7 @@ except ImportError:
 MELANGE_VERSION = ['2012', '1']
 YEAR, COUNT = MELANGE_VERSION
 
-FINAL = False   # This becomes true at Release Candidate time
+FINAL = True   # This becomes true at Release Candidate time
 
 
 def canonical_version_string():
