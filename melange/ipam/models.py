@@ -287,6 +287,7 @@ class IpBlock(ModelBase):
         for block in self.subnets():
             block.delete()
         IpAddress.find_all(ip_block_id=self.id).delete()
+        ipv4.plugin().get_generator(self).delete()
         super(IpBlock, self).delete()
 
     def policy(self):
