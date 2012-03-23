@@ -49,3 +49,6 @@ class DbBasedIpGenerator(object):
     def ip_removed(self, address):
         models.AllocatableIp.create(ip_block_id=self.ip_block.id,
                                     address=address)
+
+    def delete(self):
+        models.AllocatableIp.find_all(ip_block_id=self.ip_block.id).delete()
