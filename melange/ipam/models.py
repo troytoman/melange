@@ -233,6 +233,11 @@ class IpAddressIterator(object):
             raise StopIteration
 
 
+def deallocated_by_date():
+    days = config.Config.get('keep_deallocated_ips_for_days', 2)
+    return utils.utcnow() - datetime.timedelta(days=int(days))
+
+
 class IpBlock(ModelBase):
 
     PUBLIC_TYPE = "public"
@@ -256,7 +261,8 @@ class IpBlock(ModelBase):
     def delete_all_deallocated_ips(cls):
         LOG.info("Deleting all deallocated IPs")
         for block in db.db_api.find_all_blocks_with_deallocated_ips():
-            block.delete_deallocated_ips()
+            block.delete_deallocated_ips(
+                    deallocated_by_func=deallocated_by_date)
 
     @property
     def broadcast(self):
@@ -414,19 +420,15 @@ class IpBlock(ModelBase):
             LOG.debug("Deallocating IP: %s" % ip_address)
             ip_address.deallocate()
 
-    def delete_deallocated_ips(self):
+    def delete_deallocated_ips(self, deallocated_by_func):
         self.update(is_full=False)
 
         for ip in db.db_api.find_deallocated_ips(
-            deallocated_by=self._deallocated_by_date(), ip_block_id=self.id):
+            deallocated_by=deallocated_by_func(), ip_block_id=self.id):
             LOG.debug("Deleting deallocated IP: %s" % ip)
             generator = ipv4.plugin().get_generator(self)
             generator.ip_removed(ip.address)
             ip.delete()
-
-    def _deallocated_by_date(self):
-        days = config.Config.get('keep_deallocated_ips_for_days', 2)
-        return utils.utcnow() - datetime.timedelta(days=int(days))
 
     def subnet(self, cidr, network_id=None, tenant_id=None):
         network_id = network_id or self.network_id
@@ -1058,6 +1060,11 @@ class Network(ModelBase):
         ips = IpAddress.find_all_by_network(self.id, interface_id=interface_id)
         for ip in ips:
             ip.deallocate()
+        keep_deallocated_ips = config.Config.get('keep_deallocated_ips', 'False')
+        if not utils.bool_from_string(keep_deallocated_ips):
+            LOG.debug("Deleting deallocated ips")
+            for block in db.db_api.find_all_blocks_with_deallocated_ips():
+                block.delete_deallocated_ips(deallocated_by_func=utils.utcnow)
 
     def find_allocated_ip(self, **conditions):
         for ip_block in self.ip_blocks:

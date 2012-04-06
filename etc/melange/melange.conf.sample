@@ -44,6 +44,11 @@ api_extensions_path = melange/extensions
 dns1 = 8.8.8.8
 dns2 = 8.8.4.4
 
+#Release Deallocated fixed IPs immediately
+#If set to True, deallocated IPs would be deleted only when
+#bin/melange-delete-deallocated-ips script is executed
+keep_deallocated_ips = False
+
 #Number of days before deallocated IPs are deleted
 keep_deallocated_ips_for_days = 2
 

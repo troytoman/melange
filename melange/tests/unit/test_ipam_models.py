@@ -956,12 +956,29 @@ class TestIpBlock(tests.BaseTest):
             ip2.deallocate()
 
         with unit.StubTime(time=current_time):
-            models.IpBlock.delete_all_deallocated_ips()
+            models.IpBlock.delete_all_deallocated_ips(
+                    deallocated_by_func=models.deallocated_by_date)
 
         self.assertEqual(models.IpAddress.find_all(
                                ip_block_id=ip_block1.id).all(), [])
         self.assertEqual(models.IpAddress.find_all(
                                ip_block_id=ip_block2.id).all(), [])
+
+    def test_delete_deallocated_ips_immediately(self):
+        ip_block = factory_models.PrivateIpBlockFactory(cidr="10.0.1.1/24")
+        current_time = datetime.datetime(2050, 1, 1)
+        ip1 = _allocate_ip(ip_block)
+        ip2 = _allocate_ip(ip_block)
+        ip3 = _allocate_ip(ip_block)
+        with unit.StubTime(time=current_time):
+            ip1.deallocate()
+            ip3.deallocate()
+
+        with unit.StubTime(time=current_time):
+            ip_block.delete_deallocated_ips(deallocated_by_func=utils.utcnow)
+
+        existing_ips = models.IpAddress.find_all(ip_block_id=ip_block.id).all()
+        self.assertModelsEqual(existing_ips, [ip2])
 
     def test_delete_deallocated_ips_after_default_of_two_days(self):
         ip_block = factory_models.PrivateIpBlockFactory(cidr="10.0.1.1/24")
@@ -975,7 +992,8 @@ class TestIpBlock(tests.BaseTest):
             ip3.deallocate()
 
         with unit.StubTime(time=current_time):
-            ip_block.delete_deallocated_ips()
+            ip_block.delete_deallocated_ips(
+                    deallocated_by_func=models.deallocated_by_date)
 
         existing_ips = models.IpAddress.find_all(ip_block_id=ip_block.id).all()
         self.assertModelsEqual(existing_ips, [ip2])
@@ -999,7 +1017,8 @@ class TestIpBlock(tests.BaseTest):
 
         with unit.StubConfig(keep_deallocated_ips_for_days=1):
             with unit.StubTime(time=current_time):
-                ip_block.delete_deallocated_ips()
+                ip_block.delete_deallocated_ips(
+                        deallocated_by_func=models.deallocated_by_date)
 
         self.assertEqual(ip_block.addresses(), [ip2])
 
@@ -1014,7 +1033,8 @@ class TestIpBlock(tests.BaseTest):
                           interface=interface)
         self.assertTrue(ip_block.is_full)
 
-        models.IpBlock.delete_all_deallocated_ips()
+        models.IpBlock.delete_all_deallocated_ips(
+                deallocated_by_func=models.deallocated_by_date)
 
         self.assertFalse(models.IpBlock.find(ip_block.id).is_full)
 
@@ -2461,7 +2481,8 @@ class TestAllowedIp(tests.BaseTest):
         with unit.StubTime(time=two_days_before):
             block.deallocate_ip(ip.address)
         with unit.StubTime(time=current_time):
-            block.delete_deallocated_ips()
+            block.delete_deallocated_ips(
+                    deallocated_by_func=models.deallocated_by_date)
 
         reloaded_ip = models.IpAddress.find(ip.id)
         self.assertFalse(reloaded_ip.marked_for_deallocation)
