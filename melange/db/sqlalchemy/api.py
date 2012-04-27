@@ -61,8 +61,8 @@ def save(model):
                                           error=str(error.orig))
 
 
-def delete(model):
-    db_session = session.get_session()
+def delete(model, db_session=None):
+    db_session = db_session or session.get_session()
     model = db_session.merge(model)
     db_session.delete(model)
     db_session.flush()
@@ -186,13 +186,16 @@ def find_all_allocated_ips(model, used_by_device=None, used_by_tenant=None,
 
 
 def pop_allocatable_address(address_model, **conditions):
-    address_rec = _query_by(address_model, **conditions).\
-                     with_lockmode('update').first()
-    if not address_rec:
-        return None
+    db_session = session.get_session()
+    with db_session.begin():
+        address_rec = _query_by(address_model, db_session=db_session,
+                                **conditions).\
+                         with_lockmode('update').first()
+        if not address_rec:
+            return None
 
-    delete(address_rec)
-    return address_rec.address
+        delete(address_rec, db_session=db_session)
+        return address_rec.address
 
 
 def save_allowed_ip(interface_id, ip_address_id):
@@ -273,8 +276,11 @@ def _base_query(cls):
     return session.get_session().query(cls)
 
 
-def _query_by(cls, **conditions):
-    query = _base_query(cls)
+def _query_by(cls, db_session=None, **conditions):
+    if db_session:
+        query = db_session.query(cls)
+    else:
+        query = _base_query(cls)
     if conditions:
         query = query.filter_by(**conditions)
     return query
