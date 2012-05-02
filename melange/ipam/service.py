@@ -725,12 +725,12 @@ class APICommon(wsgi.Router):
 class APIV01(APICommon):
     def __init__(self):
         super(APIV01, self).__init__()
-        self._networks_maper(self.map)
+        self._networks_mapper(self.map)
         self._interface_ip_allocations_mapper(self.map)
         self._interface_mapper(self.map)
         self._allowed_ips_mapper(self.map)
 
-    def _networks_maper(self, mapper):
+    def _networks_mapper(self, mapper):
         resource = NetworksController().create_resource()
         path = "/ipam/tenants/{tenant_id}/networks/{network_id}"
         mapper.resource("networks", path, controller=resource)
