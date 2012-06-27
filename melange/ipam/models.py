@@ -1052,7 +1052,7 @@ class Network(ModelBase):
 
         if not any(ips):
             raise exception.NoMoreAddressesError(
-                _("ip blocks in network %(network-id) are full")
+                _("ip blocks in network %(network-id)s are full")
                 % {'network-id': self.id})
 
         return filter(None, ips)
