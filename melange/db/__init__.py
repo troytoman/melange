@@ -56,11 +56,11 @@ class Query(object):
 
     def limit(self, limit=200, marker=None, marker_column=None):
         return db_api.find_all_by_limit(self._query_func,
-                                               self._model,
-                                               self._conditions,
-                                               limit=limit,
-                                               marker=marker,
-                                               marker_column=marker_column)
+                                        self._model,
+                                        self._conditions,
+                                        limit=limit,
+                                        marker=marker,
+                                        marker_column=marker_column)
 
     def paginated_collection(self, limit=200, marker=None, marker_column=None):
         collection = self.limit(int(limit) + 1, marker, marker_column)
@@ -86,7 +86,7 @@ def add_options(parser):
 
     """
     help_text = ("The following configuration options are specific to the "
-                "Melange database.")
+                 "Melange database.")
 
     group = optparse.OptionGroup(parser,
                                  "Registry Database Options",

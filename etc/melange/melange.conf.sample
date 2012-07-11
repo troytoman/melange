@@ -47,10 +47,14 @@ dns2 = 8.8.4.4
 #Release Deallocated fixed IPs immediately
 #If set to True, deallocated IPs would be deleted only when
 #bin/melange-delete-deallocated-ips script is executed
-keep_deallocated_ips = False
+#If set to False, IPs will be deallocated immediately
+keep_deallocated_ips = True
 
 #Number of days before deallocated IPs are deleted
-keep_deallocated_ips_for_days = 2
+#keep_deallocated_ips_for_days = 2
+
+#Number of seconds before deallocated IPs are deleted
+keep_deallocated_ips_for_seconds = 172800
 
 #Number of retries for allocating an IP
 ip_allocation_retries = 5
