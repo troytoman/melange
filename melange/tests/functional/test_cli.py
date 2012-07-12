@@ -53,7 +53,7 @@ class TestDeleteDeallocatedIps(tests.BaseTest):
         ip = factory_models.IpAddressFactory(ip_block_id=block.id)
         block.deallocate_ip(ip.address)
 
-        days = config.Config.get('keep_deallocated_ips_for_days')
+        days = config.Config.get('keep_deallocated_ips_for_seconds')
         self._push_back_deallocated_date(ip, days)
 
         script = tests.melange_bin_path('melange-delete-deallocated-ips')
