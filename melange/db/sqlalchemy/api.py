@@ -177,7 +177,7 @@ def find_all_allocated_ips(model, used_by_device=None, used_by_tenant=None,
                            **conditions):
     query = _query_by(ipam.models.IpAddress, **conditions).\
         filter(or_(ipam.models.IpAddress.marked_for_deallocation == None,
-                   ipam.models.IpAddress.marked_for_deallocation == False))
+                   ipam.models.IpAddress.marked_for_deallocation is False))
 
     if used_by_device or used_by_tenant:
         query = query.join(ipam.models.Interface)

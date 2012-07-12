@@ -92,9 +92,10 @@ class ModelBase(object):
             try:
                 Converter(data_type).convert(self[field_name])
             except (TypeError, ValueError):
-                self._add_error(field_name,
-                       _("%(field_name)s should be of type %(data_type)s")
-                         % locals())
+                self._add_error(
+                    field_name,
+                    _("%(field_name)s should be of type %(data_type)s")
+                    % locals())
 
     def _validate(self):
         pass
@@ -128,8 +129,9 @@ class ModelBase(object):
         model_id = self[attribute]
         conditions['id'] = model_id
         if model_id and model_class.get_by(**conditions) is None:
-            conditions_str = ", ".join(["{0} = {1}".format(key, repr(value))
-                                     for key, value in conditions.iteritems()])
+            conditions_str = ", ".join(
+                ["{0} = {1}".format(key, repr(value))
+                 for key, value in conditions.iteritems()])
             model_class_name = model_class.__name__
             self._add_error(attribute,
                             _("%(model_class_name)s with %(conditions_str)s"
@@ -146,7 +148,7 @@ class ModelBase(object):
     @classmethod
     def find_by(cls, **conditions):
         model = cls.get_by(**conditions)
-        if model == None:
+        if model is None:
             raise ModelNotFoundError(_("%s Not Found") % cls.__name__)
         return model
 
@@ -197,7 +199,7 @@ class ModelBase(object):
         if utils.parse_int(self[attribute_name]) < 0:
             self._add_error(attribute_name,
                             _("%s should be a positive integer")
-                              % attribute_name)
+                            % attribute_name)
 
     def _add_error(self, attribute_name, error_message):
         self.errors[attribute_name] = self.errors.get(attribute_name, [])
@@ -209,7 +211,7 @@ class Converter(object):
     data_type_converters = {
         'integer': lambda value: int(value),
         'boolean': lambda value: utils.bool_from_string(value),
-     }
+    }
 
     def __init__(self, data_type):
         self.data_type = data_type
@@ -236,10 +238,10 @@ class IpAddressIterator(object):
 def deallocated_by_date():
     days = config.Config.get('keep_deallocated_ips_for_days')
     if days is None:
-      seconds = config.Config.get('keep_deallocated_ips_for_seconds', 172800)
+        seconds = config.Config.get('keep_deallocated_ips_for_seconds', 172800)
     else:
-      seconds = int(days) * 86400
-    LOG.debug("Delete delay = ",seconds)
+        seconds = int(days) * 86400
+    LOG.debug("Delete delay = ", seconds)
     return utils.utcnow() - datetime.timedelta(seconds=int(seconds))
 
 
@@ -333,10 +335,10 @@ class IpBlock(ModelBase):
 
         interface_network = interface.plugged_in_network_id()
         if (interface_network is not None
-            and interface_network != self.network_id):
+                and interface_network != self.network_id):
             raise IpAllocationNotAllowedError(
                 _("Interface %s is configured on another network")
-                              % interface.virtual_interface_id)
+                % interface.virtual_interface_id)
 
         if address:
             return self._allocate_specific_ip(interface, address)
@@ -347,9 +349,9 @@ class IpBlock(ModelBase):
 
         for retries in range(max_allowed_retry):
             address = self._generate_ip(
-                            used_by_tenant=interface.tenant_id,
-                            mac_address=interface.mac_address_eui_format,
-                            **kwargs)
+                used_by_tenant=interface.tenant_id,
+                mac_address=interface.mac_address_eui_format,
+                **kwargs)
             try:
                 return IpAddress.create(address=address,
                                         ip_block_id=self.id,
@@ -374,7 +376,7 @@ class IpBlock(ModelBase):
             address = next((address for address in IpAddressIterator(generator)
                             if self._address_is_allocatable(self.policy(),
                                                             address)),
-                            None)
+                           None)
 
         if not address:
             self.update(is_full=True)
@@ -402,7 +404,7 @@ class IpBlock(ModelBase):
     def _address_is_allocatable(self, policy, address):
         unavailable_addresses = [self.gateway, self.broadcast]
         return (address not in unavailable_addresses
-                    and self._allowed_by_policy(policy, address))
+                and self._allowed_by_policy(policy, address))
 
     def _allowed_by_policy(self, policy, address):
         return policy is None or policy.allows(self.cidr, address)
@@ -422,7 +424,7 @@ class IpBlock(ModelBase):
 
     def deallocate_ip(self, address):
         ip_address = IpAddress.find_by(ip_block_id=self.id, address=address)
-        if ip_address != None:
+        if isinstance(ip_address, IpAddress):
             LOG.debug("Deallocating IP: %s" % ip_address)
             ip_address.deallocate()
 
@@ -430,7 +432,7 @@ class IpBlock(ModelBase):
         self.update(is_full=False)
 
         for ip in db.db_api.find_deallocated_ips(
-            deallocated_by=deallocated_by_func(), ip_block_id=self.id):
+                deallocated_by=deallocated_by_func(), ip_block_id=self.id):
             LOG.debug("Deleting deallocated IP: %s" % ip)
             generator = ipv4.plugin().get_generator(self)
             generator.ip_removed(ip.address)
@@ -459,7 +461,7 @@ class IpBlock(ModelBase):
     def _validate_cidr_is_within_parent_block_cidr(self):
         parent = self.parent
         if (parent and netaddr.IPNetwork(self.cidr) not in
-            netaddr.IPNetwork(parent.cidr)):
+                netaddr.IPNetwork(parent.cidr)):
             self._add_error('cidr',
                             _("cidr should be within parent block's cidr"))
 
@@ -498,7 +500,7 @@ class IpBlock(ModelBase):
         if not self.network_id:
             return []
         blocks = db.db_api.find_all_top_level_blocks_in_network(
-                self.network_id)
+            self.network_id)
         return filter(lambda block: block != self and block != self.parent,
                       blocks)
 
@@ -514,7 +516,7 @@ class IpBlock(ModelBase):
 
     def _validate_belongs_to_supernet_network(self):
         if (self.parent and self.parent.network_id and
-            self.parent.network_id != self.network_id):
+                self.parent.network_id != self.network_id):
             self._add_error('network_id',
                             _("network_id should be same as that of parent"))
 
@@ -589,9 +591,10 @@ class IpAddress(ModelBase):
     @classmethod
     def find_all_by_network(cls, network_id, **conditions):
         LOG.debug("Retrieving all IPs for network %s" % network_id)
-        return db.db_query.find_all_ips_in_network(cls,
-                                             network_id=network_id,
-                                             **conditions)
+        return db.db_query.find_all_ips_in_network(
+            cls,
+            network_id=network_id,
+            **conditions)
 
     @classmethod
     def find_all_allocated_ips(cls, **conditions):
@@ -620,10 +623,9 @@ class IpAddress(ModelBase):
 
     def add_inside_locals(self, ip_addresses):
         db.db_api.save_nat_relationships([
-            {
-            'inside_global_address_id': self.id,
-            'inside_local_address_id': local_address.id,
-            }
+            {'inside_global_address_id': self.id,
+             'inside_local_address_id': local_address.id,
+             }
             for local_address in ip_addresses])
 
     def deallocate(self):
@@ -637,22 +639,22 @@ class IpAddress(ModelBase):
         self.update(marked_for_deallocation=False, deallocated_at=None)
 
     def inside_globals(self, **kwargs):
-        return db.db_query.find_inside_globals(IpAddress,
-                                         local_address_id=self.id,
-                                         **kwargs)
+        return db.db_query.find_inside_globals(
+            IpAddress,
+            local_address_id=self.id,
+            **kwargs)
 
     def add_inside_globals(self, ip_addresses):
         db.db_api.save_nat_relationships([
-            {
-            'inside_global_address_id': global_address.id,
-            'inside_local_address_id': self.id,
-            }
+            {'inside_global_address_id': global_address.id,
+             'inside_local_address_id': self.id,
+             }
             for global_address in ip_addresses])
 
     def inside_locals(self, **kwargs):
         return db.db_query.find_inside_locals(IpAddress,
                                               global_address_id=self.id,
-                                        **kwargs)
+                                              **kwargs)
 
     def remove_inside_globals(self, inside_global_address=None):
         return db.db_api.remove_inside_globals(self.id, inside_global_address)
@@ -828,8 +830,9 @@ class Interface(ModelBase):
                                                    **kwargs)
 
         if network_params:
-            network = Network.find_or_create_by(network_params.pop('id'),
-                                               network_params.pop('tenant_id'))
+            network = Network.find_or_create_by(
+                network_params.pop('id'),
+                network_params.pop('tenant_id'))
             network.allocate_ips(interface=interface, **network_params)
         return interface
 
@@ -893,7 +896,7 @@ class Interface(ModelBase):
         if ip is None:
             raise ModelNotFoundError(
                 _("Ip Address %(address)s hasnt been allowed "
-                   "on interface %(vif_id)s")
+                  "on interface %(vif_id)s")
                 % (dict(address=address,
                         vif_id=self.virtual_interface_id)))
         return ip
@@ -976,7 +979,7 @@ class Policy(ModelBase):
 
     def allows(self, cidr, address):
         if any(ip_octet.applies_to(address)
-                       for ip_octet in self.unusable_ip_octets):
+               for ip_octet in self.unusable_ip_octets):
             return False
         return not any(ip_range.contains(cidr, address)
                        for ip_range in self.unusable_ip_ranges)
@@ -1067,7 +1070,8 @@ class Network(ModelBase):
         ips = IpAddress.find_all_by_network(self.id, interface_id=interface_id)
         for ip in ips:
             ip.deallocate()
-        keep_deallocated_ips = config.Config.get('keep_deallocated_ips', 'False')
+        keep_deallocated_ips = config.Config.get(
+            'keep_deallocated_ips', 'False')
         if not utils.bool_from_string(keep_deallocated_ips):
             LOG.debug("Deleting deallocated ips")
             for block in db.db_api.find_all_blocks_with_deallocated_ips():
@@ -1081,9 +1085,9 @@ class Network(ModelBase):
                 pass
 
         raise ModelNotFoundError(_("IpAddress with %(conditions)s for "
-                                    "network %(network)s not found")
-                                  % (dict(conditions=conditions,
-                                          network=self.id)))
+                                   "network %(network)s not found")
+                                 % (dict(conditions=conditions,
+                                         network=self.id)))
 
     def _block_partitions(self):
         return [[block for block in self.ip_blocks
@@ -1109,17 +1113,16 @@ class Network(ModelBase):
 
 
 def persisted_models():
-    return {
-        'IpBlock': IpBlock,
-        'IpAddress': IpAddress,
-        'Policy': Policy,
-        'IpRange': IpRange,
-        'IpOctet': IpOctet,
-        'IpRoute': IpRoute,
-        'MacAddressRange': MacAddressRange,
-        'MacAddress': MacAddress,
-        'Interface': Interface,
-        }
+    return {'IpBlock': IpBlock,
+            'IpAddress': IpAddress,
+            'Policy': Policy,
+            'IpRange': IpRange,
+            'IpOctet': IpOctet,
+            'IpRoute': IpRoute,
+            'MacAddressRange': MacAddressRange,
+            'MacAddress': MacAddress,
+            'Interface': Interface,
+            }
 
 
 class DuplicateAddressError(exception.MelangeError):
