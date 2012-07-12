@@ -62,7 +62,7 @@ class TenantBasedAuth(object):
             return True
         match_for_tenant = self.tenant_scoped_url.match(request.path_info)
         if (match_for_tenant and
-            tenant_id == match_for_tenant.group('tenant_id')):
+                tenant_id == match_for_tenant.group('tenant_id')):
             LOG.debug("Authorized tenant '%(tenant_id)s' request: "
                       "%(request)s" % locals())
             return True

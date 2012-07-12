@@ -30,7 +30,7 @@ def upgrade(migrate_engine):
 
     interface = session.get_session().execute(
         "SELECT COUNT(1) as count FROM interfaces "
-        "WHERE device_id NOT REGEXP '.*-.*' AND device_id IS NOT NULL")
+        "WHERE device_id NOT LIKE '%-%' AND device_id IS NOT NULL")
     print(interface)
     if interface.fetchone().count > 0:
         print """

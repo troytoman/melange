@@ -53,7 +53,7 @@ class PaginatedDataView(object):
 
     def data_for_xml(self):
         atom_links = [AtomLink(link['rel'], link['href'])
-                           for link in self._links()]
+                      for link in self._links()]
         return {self.collection_type: self.collection + atom_links}
 
     def _create_link(self, marker):

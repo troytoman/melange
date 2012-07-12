@@ -234,8 +234,13 @@ class IpAddressIterator(object):
 
 
 def deallocated_by_date():
-    days = config.Config.get('keep_deallocated_ips_for_days', 2)
-    return utils.utcnow() - datetime.timedelta(days=int(days))
+    days = config.Config.get('keep_deallocated_ips_for_days')
+    if days is None:
+      seconds = config.Config.get('keep_deallocated_ips_for_seconds', 172800)
+    else:
+      seconds = int(days) * 86400
+    LOG.debug("Delete delay = ",seconds)
+    return utils.utcnow() - datetime.timedelta(seconds=int(seconds))
 
 
 class IpBlock(ModelBase):
@@ -258,11 +263,12 @@ class IpBlock(ModelBase):
         return allocated_ip
 
     @classmethod
-    def delete_all_deallocated_ips(cls):
+    def delete_all_deallocated_ips(
+            cls,
+            deallocated_by_func=deallocated_by_date):
         LOG.info("Deleting all deallocated IPs")
         for block in db.db_api.find_all_blocks_with_deallocated_ips():
-            block.delete_deallocated_ips(
-                    deallocated_by_func=deallocated_by_date)
+            block.delete_deallocated_ips(deallocated_by_func)
 
     @property
     def broadcast(self):

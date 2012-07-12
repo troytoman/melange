@@ -80,7 +80,7 @@ def generate_uuid():
 
 def remove_nones(hash):
     return dict((key, value)
-               for key, value in hash.iteritems() if value is not None)
+                for key, value in hash.iteritems() if value is not None)
 
 
 class cached_property(object):

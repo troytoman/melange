@@ -50,18 +50,18 @@ class Queue(object):
 
     def put(self, msg):
         LOG.debug("Putting message '%(msg)s' on queue '%(queue)s'"
-                   % dict(msg=msg, queue=self.name))
+                  % dict(msg=msg, queue=self.name))
         self.queue.put(msg)
 
     def pop(self):
         msg = self.queue.get(block=False)
         LOG.debug("Popped message '%(msg)s' from queue '%(queue)s'"
-                   % dict(msg=msg, queue=self.name))
+                  % dict(msg=msg, queue=self.name))
         return msg.payload
 
     def close(self):
         LOG.info("Closing connection to message queue '%(queue)s'."
-                  % dict(queue=self.name))
+                 % dict(queue=self.name))
         self.conn.release()
 
     def purge(self):

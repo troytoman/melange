@@ -118,7 +118,7 @@ class Result(object):
 
     def data(self, serialization_type):
         if (serialization_type == "application/xml" and
-            hasattr(self._data, "data_for_xml")):
+                hasattr(self._data, "data_for_xml")):
             return self._data.data_for_xml()
         if hasattr(self._data, "data_for_json"):
             return self._data.data_for_json()
@@ -243,8 +243,8 @@ class Fault(webob.exc.HTTPException):
                 'code': self.wrapped_exc.status_int,
                 'message': self.wrapped_exc.explanation,
                 'detail': self.wrapped_exc.detail,
-                }
             }
+        }
 
         # 'code' is an attribute on the fault tag itself
         metadata = {'attributes': {fault_name: 'code'}}
