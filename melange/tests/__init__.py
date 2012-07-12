@@ -74,11 +74,13 @@ class BaseTest(unittest.TestCase):
 
     def assertIn(self, expected, actual):
         """This is similar to assertIn in python 2.7"""
-        self.assertTrue(expected in actual,
+        self.assertTrue(
+            expected in actual,
             "{0} does not contain {1}".format(repr(actual), repr(expected)))
 
     def assertNotIn(self, expected, actual):
-        self.assertFalse(expected in actual,
+        self.assertFalse(
+            expected in actual,
             "{0} does contains {1}".format(repr(actual), repr(expected)))
 
     def assertIsNone(self, actual):
