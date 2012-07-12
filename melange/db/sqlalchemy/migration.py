@@ -128,7 +128,7 @@ def get_migrate_repo_path(repo_path=None):
     """Get the path for the migrate repository."""
 
     default_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                        'migrate_repo')
+                                'migrate_repo')
     repo_path = repo_path or default_path
     assert os.path.exists(repo_path)
     return repo_path
