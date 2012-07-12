@@ -39,11 +39,13 @@ class ControllerTestBase(tests.BaseTest):
 
     def setUp(self):
         super(ControllerTestBase, self).setUp()
-        conf, melange_v0_1 = config.Config.load_paste_app('melangeapp_v0_1',
-                {"config_file": tests.test_config_file()}, None)
+        conf, melange_v0_1 = config.Config.load_paste_app(
+            'melangeapp_v0_1',
+            {"config_file": tests.test_config_file()}, None)
         self.app = unit.TestApp(melange_v0_1)
-        conf, melange_v1_0 = config.Config.load_paste_app('melangeapp_v1_0',
-                {"config_file": tests.test_config_file()}, None)
+        conf, melange_v1_0 = config.Config.load_paste_app(
+            'melangeapp_v1_0',
+            {"config_file": tests.test_config_file()}, None)
         self.appv1_0 = unit.TestApp(melange_v1_0)
 
 
@@ -145,26 +147,28 @@ class TestIpBlockController(ControllerTestBase):
 
     def test_create_with_bad_cidr(self):
         response = self.app.post_json("%s" % self.ip_block_path,
-                          {'ip_block': {'network_id': "300",
-                                        'type': "public",
-                                        'cidr': "10...",
-                                        }
-                           },
-                          status="*")
+                                      {'ip_block': {
+                                       'network_id': "300",
+                                       'type': "public",
+                                       'cidr': "10...",
+                                       }
+                                       },
+                                      status="*")
 
         self.assertErrorResponse(response, webob.exc.HTTPBadRequest,
                                  'cidr is invalid')
 
     def test_create_ignores_uneditable_fields(self):
         response = self.app.post_json("%s" % self.ip_block_path,
-                                 {'ip_block': {'network_id': "300",
-                                               'cidr': "10.0.0.0/31",
-                                               'type': "public",
-                                               'parent_id': 'input_parent_id',
-                                               'tenant_id': 'input_tenant_id',
-                                               },
-                                  },
-                                 status="*")
+                                      {'ip_block': {
+                                       'network_id': "300",
+                                       'cidr': "10.0.0.0/31",
+                                       'type': "public",
+                                       'parent_id': 'input_parent_id',
+                                       'tenant_id': 'input_tenant_id',
+                                       },
+                                       },
+                                      status="*")
 
         self.assertEqual(response.status_int, 201)
         created_block = models.IpBlock.find_by(network_id="300")
@@ -187,9 +191,9 @@ class TestIpBlockController(ControllerTestBase):
 
         response = self.app.put_json("%s/%s" % (self.ip_block_path, block.id),
                                      {'ip_block': {
-                                         'network_id': "new_net",
-                                         'policy_id': new_policy.id,
-                                         }
+                                      'network_id': "new_net",
+                                      'policy_id': new_policy.id,
+                                      }
                                       })
         updated_block = models.IpBlock.find(block.id)
         self.assertEqual(response.status_int, 200)
@@ -206,11 +210,11 @@ class TestIpBlockController(ControllerTestBase):
 
         response = self.app.put_json("%s/%s" % (self.ip_block_path, block.id),
                                      {'ip_block': {
-                                         'type': "new_type",
-                                         'cidr': "50.0.0.0/29",
-                                         'tenant_id': "new_tenant",
-                                         'parent_id': another.id,
-                                         }
+                                      'type': "new_type",
+                                      'cidr': "50.0.0.0/29",
+                                      'tenant_id': "new_tenant",
+                                      'parent_id': another.id,
+                                      }
                                       })
         updated_block = models.IpBlock.find(block.id)
         self.assertEqual(response.status_int, 200)
@@ -234,7 +238,7 @@ class TestIpBlockController(ControllerTestBase):
         blocks = [factory_models.PublicIpBlockFactory(cidr="192.1.1.1/30",
                                                       network_id="1"),
                   factory_models.PrivateIpBlockFactory(cidr="192.2.2.2/30",
-                                                      network_id="2"),
+                                                       network_id="2"),
                   factory_models.PublicIpBlockFactory(cidr="192.3.3.3/30",
                                                       network_id="1"),
                   ]
@@ -317,15 +321,14 @@ class TestIpBlockController(ControllerTestBase):
         self.assertTrue("ip_blocks_links" not in response.json)
 
     def test_create(self):
-        req_body = {
-            'ip_block': {
-                'network_id': "3",
-                'cidr': "10.1.1.0/24",
-                'type': "public",
-                'dns1': "12.34.56.67",
-                'dns2': "65.76.87.98",
-                },
-            }
+        req_body = {'ip_block': {
+                    'network_id': "3",
+                    'cidr': "10.1.1.0/24",
+                    'type': "public",
+                    'dns1': "12.34.56.67",
+                    'dns2': "65.76.87.98",
+                    },
+                    }
         response = self.app.post_json("/ipam/tenants/111/ip_blocks.json",
                                       req_body)
 
@@ -339,14 +342,13 @@ class TestIpBlockController(ControllerTestBase):
         self.assertEqual(response.json, dict(ip_block=_data(saved_block)))
 
     def test_create_ignores_tenant_id_passed_in_post_body(self):
-        req_body = {
-            'ip_block': {
-                'network_id': "300",
-                'cidr': "10.1.1.0/2",
-                'tenant_id': "543",
-                'type': "public",
-                },
-            }
+        req_body = {'ip_block': {
+                    'network_id': "300",
+                    'cidr': "10.1.1.0/2",
+                    'tenant_id': "543",
+                    'type': "public",
+                    },
+                    }
 
         response = self.app.post_json("/ipam/tenants/111/ip_blocks", req_body)
 
@@ -381,8 +383,8 @@ class TestIpBlockController(ControllerTestBase):
         ip_block = factory_models.PrivateIpBlockFactory(tenant_id="123")
         response = self.app.put_json("/ipam/tenants/321/ip_blocks/%s"
                                      % ip_block.id, {
-                                         'ip_block': {'network_id': "foo"},
-                                         },
+                                     'ip_block': {'network_id': "foo"},
+                                     },
                                      status='*')
 
         self.assertErrorResponse(response, webob.exc.HTTPNotFound,
@@ -413,12 +415,12 @@ class TestSubnetController(ControllerTestBase):
                                                tenant_id="123")
 
         response = self.app.post_json(self._subnets_path(parent),
-                                 {'subnet': {
-                                          'cidr': "10.0.0.0/29",
-                                          'network_id': "2",
-                                          'tenant_id': "321",
-                                          },
-                                  })
+                                      {'subnet': {
+                                       'cidr': "10.0.0.0/29",
+                                       'network_id': "2",
+                                       'tenant_id': "321",
+                                       },
+                                       })
 
         subnet = models.IpBlock.find_by(parent_id=parent.id)
         self.assertEqual(response.status_int, 201)
@@ -430,13 +432,13 @@ class TestSubnetController(ControllerTestBase):
     def test_create_excludes_uneditable_fields(self):
         parent = factory_models.IpBlockFactory(cidr="10.0.0.0/28")
 
-        response = self.app.post_json(self._subnets_path(parent),
-                                 {'subnet': {
-                                          'cidr': "10.0.0.0/29",
-                                          'type': "Input type",
-                                          'parent_id': "Input parent",
-                                          },
-                                  })
+        response = self.app.post_json(
+            self._subnets_path(parent),
+            {'subnet': {'cidr': "10.0.0.0/29",
+                        'type': "Input type",
+                        'parent_id': "Input parent",
+                        },
+             })
 
         subnet = models.IpBlock.find_by(parent_id=parent.id)
         self.assertEqual(response.status_int, 201)
@@ -455,8 +457,8 @@ class TestIpAddressController(ControllerTestBase):
 
         response = self.app.post_json(self._address_path(block),
                                       {'ip_address': {
-                                          'interface_id': "vif_id",
-                                          }
+                                       'interface_id': "vif_id",
+                                       }
                                        })
 
         self.assertEqual(response.status, "201 Created")
@@ -469,9 +471,9 @@ class TestIpAddressController(ControllerTestBase):
         block = factory_models.IpBlockFactory(cidr="10.1.1.0/28")
         response = self.app.post_json(self._address_path(block),
                                       {'ip_address': {
-                                          'address': '10.1.1.2',
-                                          'interface_id': "vif_id",
-                                          }
+                                       'address': '10.1.1.2',
+                                       'interface_id': "vif_id",
+                                       }
                                        })
 
         self.assertEqual(response.status, "201 Created")
@@ -494,9 +496,9 @@ class TestIpAddressController(ControllerTestBase):
 
         self.app.post_json(self._address_path(block),
                            {'ip_address': {
-                               'tenant_id': "RAX",
-                               'interface_id': "vif_id",
-                               }
+                            'tenant_id': "RAX",
+                            'interface_id': "vif_id",
+                            }
                             })
 
         interface = models.Interface.find_by(vif_id_on_device="vif_id")
@@ -507,8 +509,8 @@ class TestIpAddressController(ControllerTestBase):
 
         self.app.post_json(self._address_path(block),
                            {'ip_address': {
-                               'interface_id': "vif_id",
-                               }
+                            'interface_id': "vif_id",
+                            }
                             })
 
         interface = models.Interface.find_by(vif_id_on_device="vif_id")
@@ -542,18 +544,17 @@ class TestIpAddressController(ControllerTestBase):
 
         ipv6_generator = mock_generator.MockIpV6Generator("ff::/64")
         self.mock.StubOutWithMock(ipv6, "address_generator_factory")
-        ipv6.address_generator_factory("ff::/64",
-                                       mac_address="10-23-56-78-90-01",
-                                       used_by_tenant="111").\
-                                       AndReturn(ipv6_generator)
+        ipv6.address_generator_factory(
+            "ff::/64",
+            mac_address="10-23-56-78-90-01",
+            used_by_tenant="111").AndReturn(ipv6_generator)
 
-        params = {
-            'ip_address': {
-                "interface_id": "123",
-                'mac_address': "10:23:56:78:90:01",
-                'tenant_id': "111",
-                },
-            }
+        params = {'ip_address': {
+                  "interface_id": "123",
+                  'mac_address': "10:23:56:78:90:01",
+                  'tenant_id': "111",
+                  },
+                  }
 
         self.mock.ReplayAll()
         response = self.app.post_json(self._address_path(block), params)
@@ -583,10 +584,10 @@ class TestIpAddressController(ControllerTestBase):
 
         response = self.app.post_json(self._address_path(block),
                                       {'ip_address': {
-                                          "interface_id": "iface_id",
-                                          "used_by_device": iface.device_id,
-                                          "tenant_id": iface.tenant_id,
-                                          }
+                                       "interface_id": "iface_id",
+                                       "used_by_device": iface.device_id,
+                                       "tenant_id": iface.tenant_id,
+                                       }
                                        })
 
         self.assertEqual(models.Interface.count(), 1)
@@ -629,7 +630,7 @@ class TestIpAddressController(ControllerTestBase):
     def test_index(self):
         block = factory_models.IpBlockFactory()
         address1, address2 = models.sort([_allocate_ip(block)
-                                            for i in range(2)])
+                                         for i in range(2)])
 
         response = self.app.get(self._address_path(block))
 
@@ -644,7 +645,7 @@ class TestIpAddressController(ControllerTestBase):
         ips = models.sort([_allocate_ip(block) for i in range(5)])
 
         response = self.app.get("{0}?limit=2&marker={1}".format(
-                self._address_path(block), ips[1].id))
+            self._address_path(block), ips[1].id))
 
         ip_addresses = response.json["ip_addresses"]
         next_link = response.json["ip_addresses_links"][0]['href']
@@ -663,7 +664,7 @@ class TestIpAddressController(ControllerTestBase):
         block.deallocate_ip(ips[0].address)
 
         response = self.app.put_json("{0}/{1}/restore".format(
-                self._address_path(block), ips[0].address), {})
+            self._address_path(block), ips[0].address), {})
 
         ip_addresses = [ip.address for ip in
                         models.IpAddress.find_all(ip_block_id=block.id)]
@@ -675,9 +676,9 @@ class TestIpAddressController(ControllerTestBase):
         ip_address = factory_models.IpAddressFactory(ip_block_id=block.id)
         self.block_path = "/ipam/tenants/111/ip_blocks"
         response = self.app.get("%s/%s/ip_addresses/%s"
-                                 % (self.block_path,
-                                    block.id,
-                                    ip_address.address),
+                                % (self.block_path,
+                                   block.id,
+                                   ip_address.address),
                                 status='*')
 
         self.assertErrorResponse(response, webob.exc.HTTPNotFound,
@@ -688,8 +689,8 @@ class TestIpAddressController(ControllerTestBase):
 
         self.block_path = "/ipam/tenants/111/ip_blocks"
         response = self.app.get("%s/%s/ip_addresses"
-                                 % (self.block_path, block.id),
-                                 status='*')
+                                % (self.block_path, block.id),
+                                status='*')
 
         self.assertErrorResponse(response, webob.exc.HTTPNotFound,
                                  "IpBlock Not Found")
@@ -700,9 +701,9 @@ class TestIpAddressController(ControllerTestBase):
         block.deallocate_ip(ip_address.address)
         self.block_path = "/ipam/tenants/111/ip_blocks"
         response = self.app.put_json("%s/%s/ip_addresses/%s/restore"
-                                 % (self.block_path, block.id,
-                                    ip_address.address), {},
-                                 status='*')
+                                     % (self.block_path, block.id,
+                                        ip_address.address), {},
+                                     status='*')
 
         self.assertErrorResponse(response, webob.exc.HTTPNotFound,
                                  "IpBlock Not Found")
@@ -722,9 +723,9 @@ class TestIpAddressController(ControllerTestBase):
         ip_address = factory_models.IpAddressFactory(ip_block_id=block.id)
         self.block_path = "/ipam/tenants/111/ip_blocks"
         response = self.app.delete("%s/%s/ip_addresses/%s"
-                                 % (self.block_path, block.id,
-                                    ip_address.address),
-                                 status='*')
+                                   % (self.block_path, block.id,
+                                      ip_address.address),
+                                   status='*')
 
         self.assertErrorResponse(response, webob.exc.HTTPNotFound,
                                  "IpBlock Not Found")
@@ -769,13 +770,12 @@ class TestIpRoutesController(ControllerTestBase):
     def test_create(self):
         block = factory_models.IpBlockFactory(cidr="10.1.1.0/28")
         path = "/ipam/tenants/tenant_id/ip_blocks/%s/ip_routes" % block.id
-        params = {
-            'ip_route': {
-                'destination': "10.1.1.1",
-                'netmask': "255.255.255.0",
-                'gateway': "10.1.1.0",
-                }
-            }
+        params = {'ip_route': {
+                  'destination': "10.1.1.1",
+                  'netmask': "255.255.255.0",
+                  'gateway': "10.1.1.0",
+                  }
+                  }
 
         response = self.app.post_json(path, params)
 
@@ -790,14 +790,13 @@ class TestIpRoutesController(ControllerTestBase):
     def test_create_ignores_source_block_id_in_body(self):
         block = factory_models.IpBlockFactory(cidr="10.1.1.0/28")
         path = "/ipam/tenants/tenant_id/ip_blocks/%s/ip_routes" % block.id
-        params = {
-            'ip_route': {
-                'destination': "10.1.1.1",
-                'netmask': "255.255.255.0",
-                'gateway': "10.1.1.0",
-                'source_block_id': "other_block",
-                }
-            }
+        params = {'ip_route': {
+                  'destination': "10.1.1.1",
+                  'netmask': "255.255.255.0",
+                  'gateway': "10.1.1.0",
+                  'source_block_id': "other_block",
+                  }
+                  }
 
         response = self.app.post_json(path, params)
 
@@ -808,13 +807,12 @@ class TestIpRoutesController(ControllerTestBase):
     def test_create_fails_for_non_existent_block_for_tenant(self):
         block = factory_models.IpBlockFactory(tenant_id="tenant_id")
         path = "/ipam/tenants/bad_tenant_id/ip_blocks/%s/ip_routes" % block.id
-        params = {
-            'ip_route': {
-                'destination': "10.1.1.1",
-                'netmask': "255.255.255.0",
-                'gateway': "10.1.1.0",
-                }
-            }
+        params = {'ip_route': {
+                  'destination': "10.1.1.1",
+                  'netmask': "255.255.255.0",
+                  'gateway': "10.1.1.0",
+                  }
+                  }
         response = self.app.post_json(path, params, status="*")
 
         self.assertErrorResponse(response, webob.exc.HTTPNotFound,
@@ -884,14 +882,13 @@ class TestIpRoutesController(ControllerTestBase):
                                                  netmask="255.255.255.0",
                                                  gateway="10.1.1.0",
                                                  source_block_id=block.id)
-        params = {
-            'ip_route': {
-                'destination': "192.1.1.1",
-                'netmask': "255.255.0.0",
-                'gateway': "192.1.1.0",
-                'source_block_id': "some_other_block_id",
-                }
-            }
+        params = {'ip_route': {
+                  'destination': "192.1.1.1",
+                  'netmask': "255.255.0.0",
+                  'gateway': "192.1.1.0",
+                  'source_block_id': "some_other_block_id",
+                  }
+                  }
 
         path = "/ipam/tenants/tenant_id/ip_blocks/%s/ip_routes/%s"
         response = self.app.put_json(path % (block.id, ip_route.id), params)
@@ -1109,9 +1106,9 @@ class TestInsideGlobalsController(ControllerTestBase):
         response = self.app.post_json(self._nat_path(local_block,
                                                      local_ip.address),
                                       {'ip_addresses': [{
-                                          'ip_block_id': global_block.id,
-                                          'ip_address': global_ip.address
-                                          }]
+                                       'ip_block_id': global_block.id,
+                                       'ip_address': global_ip.address
+                                       }]
                                        })
 
         self.assertEqual(response.status, "200 OK")
@@ -1128,10 +1125,9 @@ class TestInsideGlobalsController(ControllerTestBase):
         local_ip = _allocate_ip(local_block)
         global_ip = _allocate_ip(other_tenant_global_block)
 
-        json_data = [{
-            'ip_block_id': other_tenant_global_block.id,
-             'ip_address': global_ip.address,
-            }]
+        json_data = [{'ip_block_id': other_tenant_global_block.id,
+                      'ip_address': global_ip.address,
+                      }]
         request_data = {'ip_addresses': json_data}
 
         response = self.app.post_json(self._nat_path(local_block,
@@ -1149,9 +1145,9 @@ class TestInsideGlobalsController(ControllerTestBase):
         response = self.app.post_json(url % (non_existant_block_id,
                                              "10.1.1.2"),
                                       {'ip_addresses': [{
-                                          'ip_block_id': "5678",
-                                          'ip_address': "10.0.0.0",
-                                          }]
+                                       'ip_block_id': "5678",
+                                       'ip_address': "10.0.0.0",
+                                       }]
                                        },
                                       status='*')
 
@@ -1166,9 +1162,9 @@ class TestInsideGlobalsController(ControllerTestBase):
                "/ip_addresses/%s/inside_globals")
         response = self.app.post_json(url % (block.id, "10.1.1.2"),
                                       {'ip_addresses': [{
-                                          'ip_block_id': "5678",
-                                          'ip_address': "10.0.0.0",
-                                          }]
+                                       'ip_block_id': "5678",
+                                       'ip_address': "10.0.0.0",
+                                       }]
                                        },
                                       status='*')
 
@@ -1238,8 +1234,8 @@ class TestInsideLocalsController(ControllerTestBase):
     def _nat_path(self, block, address):
         return ("/ipam/tenants/{0}/ip_blocks/{1}/ip_addresses/{2}"
                 "/inside_locals".format(block.tenant_id,
-                                         block.id,
-                                         address))
+                                        block.id,
+                                        address))
 
     def test_index(self):
         local_block = factory_models.PrivateIpBlockFactory(cidr="10.1.1.1/24")
@@ -1333,8 +1329,8 @@ class TestInsideLocalsController(ControllerTestBase):
 
         json_data = [{
             'ip_block_id': other_tenant_local_block.id,
-             'ip_address': local_ip.address,
-            }]
+            'ip_address': local_ip.address,
+        }]
         request_data = {'ip_addresses': json_data}
 
         response = self.app.post_json(self._nat_path(global_block,
@@ -1353,9 +1349,9 @@ class TestInsideLocalsController(ControllerTestBase):
                "/ip_addresses/%s/inside_locals")
         response = self.app.post_json(url % (block.id, "10.1.1.2"),
                                       {'ip_addresses': [{
-                                          'ip_block_id': "5678",
-                                          'ip_address': "10.0.0.0",
-                                          }]
+                                       'ip_block_id': "5678",
+                                       'ip_address': "10.0.0.0",
+                                       }]
                                        },
                                       status='*')
 
@@ -1432,10 +1428,9 @@ class TestUnusableIpRangesController(ControllerTestBase):
 
         response = self.app.post_json("%s/%s/unusable_ip_ranges"
                                       % (self.policy_path, policy.id),
-                                      {'ip_range': {
-                                          'offset': '10',
-                                          'length': '2',
-                                          },
+                                      {'ip_range': {'offset': '10',
+                                                    'length': '2',
+                                                    },
                                        })
 
         unusable_range = models.IpRange.find_by(policy_id=policy.id)
@@ -1445,10 +1440,9 @@ class TestUnusableIpRangesController(ControllerTestBase):
     def test_create_on_non_existent_policy(self):
         response = self.app.post_json("%s/bad_policy_id/unusable_ip_ranges"
                                       % self.policy_path,
-                                      {'ip_range': {
-                                          'offset': '1',
-                                          'length': '2',
-                                          },
+                                      {'ip_range': {'offset': '1',
+                                                    'length': '2',
+                                                    },
                                        },
                                       status="*")
 
@@ -1460,10 +1454,9 @@ class TestUnusableIpRangesController(ControllerTestBase):
         self.policy_path = "/ipam/tenants/another_tenant_id/policies"
         response = self.app.post_json("%s/%s/unusable_ip_ranges"
                                       % (self.policy_path, policy.id),
-                                      {'ip_range': {
-                                          'offset': 1,
-                                          'length': 20,
-                                          },
+                                      {'ip_range': {'offset': 1,
+                                                    'length': 20,
+                                                    },
                                        },
                                       status='*')
 
@@ -1511,10 +1504,9 @@ class TestUnusableIpRangesController(ControllerTestBase):
                                      % (self.policy_path,
                                         policy.id,
                                         ip_range.id),
-                                     {'ip_range': {
-                                         'offset': 1111,
-                                         'length': 2222,
-                                         },
+                                     {'ip_range': {'offset': 1111,
+                                                   'length': 2222,
+                                                   },
                                       })
 
         self.assertEqual(response.status_int, 200)
@@ -1533,11 +1525,10 @@ class TestUnusableIpRangesController(ControllerTestBase):
                                      % (self.policy_path,
                                         policy.id,
                                         ip_range.id),
-                                     {'ip_range': {
-                                         'offset': 1111,
-                                         'length': 2222,
-                                         'policy_id': new_policy_id,
-                                         },
+                                     {'ip_range': {'offset': 1111,
+                                                   'length': 2222,
+                                                   'policy_id': new_policy_id,
+                                                   },
                                       })
 
         self.assertEqual(response.status_int, 200)
@@ -1552,11 +1543,10 @@ class TestUnusableIpRangesController(ControllerTestBase):
         response = self.app.put_json("%s/%s/unusable_ip_ranges/bad_ip_range_id"
                                      % (self.policy_path, policy.id),
                                      {'ip_range': {
-                                         'offset': 1111,
-                                         'length': 222,
-                                         },
+                                      'offset': 1111,
+                                      'length': 222,
                                       },
-                                     status="*")
+                                      }, status="*")
 
         self.assertErrorResponse(response, webob.exc.HTTPNotFound,
                                  "IpRange Not Found")
@@ -1778,13 +1768,13 @@ class TestUnusableIpOctetsController(ControllerTestBase):
         ip_octet = factory_models.IpOctetFactory.create(octet=254,
                                                         policy_id=policy.id)
         new_policy_id = utils.generate_uuid()
-        response = self.app.put_json("%s/%s/unusable_ip_octets/%s"
-                                % (self.policy_path, policy.id, ip_octet.id),
-                                {'ip_octet': {
-                                         'octet': 253,
-                                         'policy_id': new_policy_id,
-                                         },
-                                 })
+        response = self.app.put_json(
+            "%s/%s/unusable_ip_octets/%s"
+            % (self.policy_path, policy.id, ip_octet.id),
+            {'ip_octet': {'octet': 253,
+                          'policy_id': new_policy_id,
+                          },
+             })
 
         self.assertEqual(response.status_int, 200)
         updated_octet = models.IpOctet.find(ip_octet.id)
@@ -2017,12 +2007,11 @@ class TestInterfaceIpAllocationsController(ControllerTestBase):
                                                         network_id="1",
                                                         cidr="10.0.0.0/24")
 
-        body = {
-            'network': {
+        body = {'network': {
                 'tenant_id': "RAX",
                 'used_by_device': "instance_id"
                 }
-            }
+                }
 
         self.app.post_json("/ipam/tenants/tnt_id/networks/1/"
                            "interfaces/123/ip_allocations", body)
@@ -2053,10 +2042,10 @@ class TestInterfaceIpAllocationsController(ControllerTestBase):
                                                           network_id="1",
                                                           cidr="fe::/96")
         self.mock.StubOutWithMock(ipv6, "address_generator_factory")
-        ipv6.address_generator_factory("fe::/96",
-                                       mac_address=mac_address,
-                                       used_by_tenant="tnt_id").\
-                                       AndReturn(ipv6_generator)
+        ipv6.address_generator_factory(
+            "fe::/96",
+            mac_address=mac_address,
+            used_by_tenant="tnt_id").AndReturn(ipv6_generator)
 
         self.mock.ReplayAll()
 
@@ -2134,10 +2123,10 @@ class TestInterfacesController(ControllerTestBase):
     def test_create_interface(self):
         response = self.app.post_json("/ipam/interfaces",
                                       {'interface': {
-                                          'id': "virt_iface",
-                                          'device_id': "instance",
-                                          'tenant_id': "tnt",
-                                          }
+                                       'id': "virt_iface",
+                                       'device_id': "instance",
+                                       'tenant_id': "tnt",
+                                       }
                                        })
 
         self.assertEqual(response.status_int, 201)
@@ -2156,15 +2145,14 @@ class TestInterfacesController(ControllerTestBase):
 
         self.app.post_json("/ipam/interfaces",
                            {'interface': {
-                               'id': "virt_iface",
-                               'device_id': "instance",
-                               'tenant_id': "instance_tnt_id",
-                               'network': {
-                                   'id': "net1",
-                                   'addresses': ['10.0.0.2'],
-                                   'tenant_id': "RAX"
-                                   },
-                               },
+                            'id': "virt_iface",
+                            'device_id': "instance",
+                            'tenant_id': "instance_tnt_id",
+                            'network': {'id': "net1",
+                                        'addresses': ['10.0.0.2'],
+                                        'tenant_id': "RAX"
+                                        },
+                            },
                             })
 
         ip_address = models.IpAddress.find_by(ip_block_id=ip_block.id,
@@ -2177,12 +2165,12 @@ class TestInterfacesController(ControllerTestBase):
     def test_create_interface_allocates_mac(self):
         factory_models.MacAddressRangeFactory()
         response = self.app.post_json("/ipam/interfaces",
-                           {'interface': {
-                               'id': "virt_iface",
-                               'device_id': "instance",
-                               'tenant_id': "tnt",
-                               }
-                            })
+                                      {'interface': {
+                                       'id': "virt_iface",
+                                       'device_id': "instance",
+                                       'tenant_id': "tnt",
+                                       }
+                                       })
 
         created_interface = models.Interface.find_by(
             vif_id_on_device='virt_iface')
@@ -2197,11 +2185,11 @@ class TestInterfacesController(ControllerTestBase):
                                               tenant_id="tnt1")
         self.app.post_json("/ipam/interfaces",
                            {'interface': {
-                               'id': "virt_iface",
-                               'device_id': "instance",
-                               'tenant_id': "tnt1",
-                               'network': {'id': "net1", 'tenant_id': "tnt1"}
-                               }
+                            'id': "virt_iface",
+                            'device_id': "instance",
+                            'tenant_id': "tnt1",
+                            'network': {'id': "net1", 'tenant_id': "tnt1"}
+                            }
                             })
 
         created_interface = models.Interface.find_by(
@@ -2218,24 +2206,23 @@ class TestInterfacesController(ControllerTestBase):
                                                    network_id="net1",
                                                    cidr="fe::/96")
         self.mock.StubOutWithMock(ipv6, "address_generator_factory")
-        ipv6.address_generator_factory("fe::/96",
-                                       mac_address=mac_address,
-                                       used_by_tenant="tnt_id").\
-                                       AndReturn(ipv6_generator)
+        ipv6.address_generator_factory(
+            "fe::/96",
+            mac_address=mac_address,
+            used_by_tenant="tnt_id").AndReturn(ipv6_generator)
 
         self.mock.ReplayAll()
 
         self.app.post_json("/ipam/interfaces",
                            {'interface': {
-                               'id': "virt_iface",
-                               'device_id': "instance",
-                               'tenant_id': "tnt_id",
-                               'mac_address': mac_address,
-                               'network': {
-                                   'id': "net1",
-                                   'tenant_id': "RAX"
-                                   },
-                               },
+                            'id': "virt_iface",
+                            'device_id': "instance",
+                            'tenant_id': "tnt_id",
+                            'mac_address': mac_address,
+                            'network': {'id': "net1",
+                                        'tenant_id': "RAX"
+                                        },
+                            },
                             })
 
         created_interface = models.Interface.find_by(
@@ -2249,12 +2236,12 @@ class TestInterfacesController(ControllerTestBase):
         with unit.StubConfig(default_cidr="10.0.0.0/24"):
             self.app.post_json("/ipam/interfaces",
                                {'interface': {
-                                   'id': "virt_iface",
-                                   'device_id': "instance",
-                                   'tenant_id': "tnt_id",
-                                   'network': {'id': "net1",
-                                       'tenant_id': "RAX"},
-                                   }
+                                'id': "virt_iface",
+                                'device_id': "instance",
+                                'tenant_id': "tnt_id",
+                                'network': {'id': "net1",
+                                            'tenant_id': "RAX"},
+                                }
                                 })
 
         interface = models.Interface.find_by(vif_id_on_device='virt_iface')
@@ -2267,7 +2254,7 @@ class TestInterfacesController(ControllerTestBase):
 
     def test_delete_deallocates_mac_and_ips_too(self):
         ip_block1 = factory_models.PrivateIpBlockFactory(tenant_id="tnt_id",
-                                                        network_id="1")
+                                                         network_id="1")
         ip_block2 = factory_models.PrivateIpBlockFactory(tenant_id="tnt_id",
                                                          network_id="1")
         mac_range = factory_models.MacAddressRangeFactory()
@@ -2303,26 +2290,27 @@ class TestInterfacesController(ControllerTestBase):
                          views.IpConfigurationView(*iface.ip_addresses).data())
 
     def test_interface_create_and_then_allocate_ips(self):
-        ip_block = factory_models.PrivateIpBlockFactory(tenant_id="RAX",
-                                                       network_id="public_net",
-                                                       cidr="10.0.0.0/24")
+        ip_block = factory_models.PrivateIpBlockFactory(
+            tenant_id="RAX",
+            network_id="public_net",
+            cidr="10.0.0.0/24")
         self.app.post_json("/ipam/interfaces",
                            {'interface': {
-                               'id': "virt_iface",
-                               'device_id': "instance",
-                               'tenant_id': "tenant_of_instance",
-                               }
-                           })
+                            'id': "virt_iface",
+                            'device_id': "instance",
+                            'tenant_id': "tenant_of_instance",
+                            }
+                            })
 
         self.app.post_json("/ipam/tenants/RAX/networks/public_net/"
                            "interfaces/virt_iface/ip_allocations",
                            {'network': {
-                               'tenant_id': "tenant_of_instance",
-                               }
-                           })
+                            'tenant_id': "tenant_of_instance",
+                            }
+                            })
 
         created_interface = models.Interface.find_by(
-                vif_id_on_device="virt_iface")
+            vif_id_on_device="virt_iface")
         created_ip = models.IpAddress.find_by(ip_block_id=ip_block.id)
 
         self.assertEqual(created_interface.tenant_id, "tenant_of_instance")
@@ -2340,14 +2328,15 @@ class TestInstanceInterfacesController(ControllerTestBase):
         for net_id in net_ids:
             factory_models.PrivateIpBlockFactory(tenant_id="RAX",
                                                  network_id=net_id)
-        put_data = {'instance': {
+        put_data = {
+            'instance': {
             'tenant_id': "tnt",
             'interfaces': [
                 {'network': {'id': net_ids[0], 'tenant_id':"RAX"}},
                 {'network': {'id': net_ids[1], 'tenant_id':"RAX"}},
                 {'network': {'id': net_ids[2], 'tenant_id':"RAX"}},
-                ]},
-            }
+            ]},
+        }
 
         response = self.app.put_json("/ipam/instances/instance_id/interfaces",
                                      put_data)
@@ -2408,9 +2397,9 @@ class TestInstanceInterfacesController(ControllerTestBase):
         self.app.delete("/ipam/instances/instance_id/interfaces")
 
         deleted_instance_ifaces = models.Interface.get_by(
-                device_id="instance_id")
+            device_id="instance_id")
         existing_instance_ifaces = models.Interface.get_by(
-                device_id="other_instance")
+            device_id="other_instance")
 
         self.assertIsNone(deleted_instance_ifaces)
         self.assertIsNotNone(existing_instance_ifaces)
@@ -2422,19 +2411,18 @@ class TestInstanceInterfacesController(ControllerTestBase):
                                                                "leasee_tenant",
                                                                provider_block)
         response = self.app.post_json("/ipam/instances/instance_id/interfaces",
-                                     {'interface': {
-                                         'tenant_id': "leasee_tenant",
-                                         'network': {
-                                              'id': "net_id",
-                                              'tenant_id': "RAX"
-                                              }
-                                         }
-                                      })
+                                      {'interface': {
+                                       'tenant_id': "leasee_tenant",
+                                       'network': {'id': "net_id",
+                                                   'tenant_id': "RAX"
+                                                   }
+                                       }
+                                       })
 
         self.assertIsNotNone(models.Interface.find_by(
             device_id="instance_id", id=existing_ip_on_instance.interface_id))
         created_interface = models.Interface.find_by(
-                device_id="instance_id", id=response.json['interface']['id'])
+            device_id="instance_id", id=response.json['interface']['id'])
         self.assertEqual(created_interface.plugged_in_network_id(), "net_id")
         self.assertEqual(created_interface.tenant_id, "leasee_tenant")
         self.assertEqual(response.json['interface'],
@@ -2458,7 +2446,7 @@ class TestInstanceInterfacesController(ControllerTestBase):
                                                        network_id="net_id")
         noise_ip = self._setup_interface_and_ip("instance_id",
                                                 "leasee_tenant",
-                                                 provider_block)
+                                                provider_block)
 
         response = self.app.get("/ipam/instances/instance_id/interfaces/"
                                 "bad_iface_id", status="*")
@@ -2505,14 +2493,14 @@ class TestInstanceInterfacesController(ControllerTestBase):
                         allocated_ip.interface_id)
         self.assertIsNone(models.Interface.get(allocated_ip.interface_id))
         self.assertTrue(
-                models.IpAddress.get(allocated_ip.id).marked_for_deallocation)
+            models.IpAddress.get(allocated_ip.id).marked_for_deallocation)
 
     def test_delete_an_interface_raises_404_for_non_existant_interface(self):
         provider_block = factory_models.IpBlockFactory(tenant_id="RAX",
                                                        network_id="net_id")
         noise_ip = self._setup_interface_and_ip("instance_id",
                                                 "leasee_tenant",
-                                                 provider_block)
+                                                provider_block)
 
         response = self.app.delete("/ipam/instances/instance_id/interfaces/"
                                    "bad_iface_id", status="*")
@@ -2544,29 +2532,29 @@ class TestInstanceInterfaceIpsController(ControllerTestBase):
         path = ("/ipam/instances/instance_id/"
                 "interfaces/%s/ip_addresses" % self.iface.id)
         body = {'network':
-                  {'id': self.block.network_id,
-                   'tenant_id': self.block.tenant_id,
-                   'address': "10.1.1.3"
-                   }
-               }
+                {'id': self.block.network_id,
+                 'tenant_id': self.block.tenant_id,
+                 'address': "10.1.1.3"
+                 }
+                }
         response = self.appv1_0.post_json(path, body)
 
         created_address = models.IpAddress.find_by(address="10.1.1.3")
         self.assertEqual(created_address.interface_id, self.iface.id)
         self.assertEqual(created_address.ip_block_id, self.block.id)
         expected_ip_data = unit.sanitize(
-                views.IpConfigurationView(created_address).data())
+            views.IpConfigurationView(created_address).data())
         self.assertEqual(response.json['ip_addresses'], expected_ip_data)
 
     def test_create_raises_404_for_non_existant_interface(self):
         path = ("/ipam/instances/instance_id/"
                 "interfaces/bad_iface_id/ip_addresses")
         body = {'network':
-                  {'id': self.block.network_id,
-                   'tenant_id': self.block.tenant_id,
-                   'address': "10.1.1.3"
-                   }
-               }
+                {'id': self.block.network_id,
+                 'tenant_id': self.block.tenant_id,
+                 'address': "10.1.1.3"
+                 }
+                }
 
         response = self.appv1_0.post_json(path, body, status="*")
 
@@ -2578,12 +2566,11 @@ class TestInstanceInterfaceIpsController(ControllerTestBase):
         path = ("/ipam/instances/instance_id/"
                 "interfaces/%s/ip_addresses" % self.iface.id)
         body = {'network':
-                  {'id': "bad_net_id",
-                   'tenant_id': self.block.tenant_id,
-                   'address': "10.1.1.3"
-                   }
-               }
-
+                {'id': "bad_net_id",
+                 'tenant_id': self.block.tenant_id,
+                 'address': "10.1.1.3"
+                 }
+                }
         response = self.appv1_0.post_json(path, body, status="*")
 
         self.assertErrorResponse(response,
@@ -2642,12 +2629,11 @@ class TestMacAddressRangesController(ControllerTestBase):
         mac_range = models.MacAddressRange.get_by(cidr="ab-bc-cd-12-23-34/40")
         self.assertEqual(response.status_int, 201)
         self.assertIsNotNone(mac_range)
-        self.assertEqual(response.json['mac_address_range'],
-                         _data(mac_range))
+        self.assertEqual(response.json['mac_address_range'], _data(mac_range))
 
     def test_show(self):
         mac_rng = factory_models.MacAddressRangeFactory(
-                cidr="ab-bc-cd-12-23-34/40")
+            cidr="ab-bc-cd-12-23-34/40")
         response = self.app.get("/ipam/mac_address_ranges/%s" % mac_rng.id)
 
         self.assertEqual(response.json['mac_address_range']['cidr'],
