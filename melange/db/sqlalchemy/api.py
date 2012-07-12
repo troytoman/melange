@@ -84,15 +84,15 @@ def update_all(query_func, model, conditions, values):
 def find_inside_globals(ip_model, local_address_id, **kwargs):
     ip_nat = mappers.IpNat
     return _base_query(ip_model).\
-           join(ip_nat, ip_nat.inside_global_address_id == ip_model.id).\
-           filter(ip_nat.inside_local_address_id == local_address_id)
+        join(ip_nat, ip_nat.inside_global_address_id == ip_model.id).\
+        filter(ip_nat.inside_local_address_id == local_address_id)
 
 
 def find_inside_locals(ip_model, global_address_id, **kwargs):
     ip_nat = mappers.IpNat
     return _base_query(ip_model).\
-           join(ip_nat, ip_nat.inside_local_address_id == ip_model.id).\
-           filter(ip_nat.inside_global_address_id == global_address_id)
+        join(ip_nat, ip_nat.inside_local_address_id == ip_model.id).\
+        filter(ip_nat.inside_global_address_id == global_address_id)
 
 
 def save_nat_relationships(nat_relationships):
@@ -106,31 +106,35 @@ def save_nat_relationships(nat_relationships):
 def remove_inside_globals(local_address_id, inside_global_address=None):
 
     def _filter_inside_global_address(natted_ips, inside_global_address):
-        return natted_ips.join((ipam.models.IpAddress,
-         mappers.IpNat.inside_global_address_id == ipam.models.IpAddress.id)).\
-         filter(ipam.models.IpAddress.address == inside_global_address)
+        return natted_ips.join(
+            (ipam.models.IpAddress,
+             mappers.IpNat.inside_global_address_id ==
+             ipam.models.IpAddress.id)).filter(
+                 ipam.models.IpAddress.address == inside_global_address)
 
     _remove_natted_ips(_filter_inside_global_address,
-                      inside_global_address,
-                      inside_local_address_id=local_address_id)
+                       inside_global_address,
+                       inside_local_address_id=local_address_id)
 
 
 def remove_inside_locals(global_address_id, inside_local_address=None):
 
     def _filter_inside_local_address(natted_ips, inside_local_address):
-        return natted_ips.join((ipam.models.IpAddress,
-          mappers.IpNat.inside_local_address_id == ipam.models.IpAddress.id)).\
-          filter(ipam.models.IpAddress.address == inside_local_address)
+        return natted_ips.join(
+            (ipam.models.IpAddress,
+             mappers.IpNat.inside_local_address_id ==
+             ipam.models.IpAddress.id)).filter(ipam.models.IpAddress.address ==
+                                               inside_local_address)
 
     _remove_natted_ips(_filter_inside_local_address,
-                      inside_local_address,
-                      inside_global_address_id=global_address_id)
+                       inside_local_address,
+                       inside_global_address_id=global_address_id)
 
 
 def _remove_natted_ips(filter_by_natted_address_func,
                        natted_address, **kwargs):
     natted_ips = find_natted_ips(**kwargs)
-    if natted_address != None:
+    if natted_address is not None:
         natted_ips = filter_by_natted_address_func(natted_ips, natted_address)
     for ip in natted_ips:
         delete(ip)
@@ -142,14 +146,14 @@ def find_natted_ips(**kwargs):
 
 def find_all_blocks_with_deallocated_ips():
     return _base_query(ipam.models.IpBlock).\
-           join(ipam.models.IpAddress).\
-           filter(ipam.models.IpAddress.marked_for_deallocation == True)
+        join(ipam.models.IpAddress).\
+        filter(ipam.models.IpAddress.marked_for_deallocation == True)
 
 
 def find_deallocated_ips(deallocated_by, **kwargs):
     return _query_by(ipam.models.IpAddress, **kwargs).\
-           filter_by(marked_for_deallocation=True).\
-           filter(ipam.models.IpAddress.deallocated_at <= deallocated_by).all()
+        filter_by(marked_for_deallocation=True).\
+        filter(ipam.models.IpAddress.deallocated_at <= deallocated_by).all()
 
 
 def find_all_top_level_blocks_in_network(network_id):
@@ -165,15 +169,15 @@ def find_all_top_level_blocks_in_network(network_id):
 
 def find_all_ips_in_network(model, network_id=None, **conditions):
     return _query_by(ipam.models.IpAddress, **conditions).\
-           join(ipam.models.IpBlock).\
-           filter(ipam.models.IpBlock.network_id == network_id)
+        join(ipam.models.IpBlock).\
+        filter(ipam.models.IpBlock.network_id == network_id)
 
 
 def find_all_allocated_ips(model, used_by_device=None, used_by_tenant=None,
                            **conditions):
     query = _query_by(ipam.models.IpAddress, **conditions).\
-            filter(or_(ipam.models.IpAddress.marked_for_deallocation == None,
-                       ipam.models.IpAddress.marked_for_deallocation == False))
+        filter(or_(ipam.models.IpAddress.marked_for_deallocation == None,
+                   ipam.models.IpAddress.marked_for_deallocation == False))
 
     if used_by_device or used_by_tenant:
         query = query.join(ipam.models.Interface)
@@ -188,9 +192,10 @@ def find_all_allocated_ips(model, used_by_device=None, used_by_tenant=None,
 def pop_allocatable_address(address_model, **conditions):
     db_session = session.get_session()
     with db_session.begin():
-        address_rec = _query_by(address_model, db_session=db_session,
-                                **conditions).\
-                         with_lockmode('update').first()
+        address_rec = _query_by(
+            address_model,
+            db_session=db_session,
+            **conditions).with_lockmode('update').first()
         if not address_rec:
             return None
 
@@ -211,8 +216,7 @@ def find_allowed_ips(ip_address_model,
                      allowed_on_interface_id=None,
                      **conditions):
     query = _query_by(ip_address_model).\
-            join(mappers.AllowedIp).\
-            filter_by(**conditions)
+        join(mappers.AllowedIp).filter_by(**conditions)
 
     if allowed_on_interface_id:
         query = query.filter(
@@ -223,8 +227,8 @@ def find_allowed_ips(ip_address_model,
 
 def remove_allowed_ip(**conditions):
     _query_by(mappers.AllowedIp).\
-    filter_by(**conditions).\
-    delete()
+        filter_by(**conditions).\
+        delete()
 
 
 def configure_db(options, *plugins):

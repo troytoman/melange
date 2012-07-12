@@ -24,8 +24,9 @@ from melange import tests
 class TestVersionsController(tests.BaseTest):
 
     def setUp(self):
-        conf, melange_app = config.Config.load_paste_app('melange',
-                              {"config_file": tests.test_config_file()}, None)
+        conf, melange_app = config.Config.load_paste_app(
+            'melange',
+            {"config_file": tests.test_config_file()}, None)
         self.test_app = webtest.TestApp(melange_app)
         super(TestVersionsController, self).setUp()
 
@@ -34,16 +35,14 @@ class TestVersionsController(tests.BaseTest):
         v01link = [{'href': "http://localhost/v0.1", 'rel': 'self'}]
         v10link = [{'href': "http://localhost/v1.0", 'rel': 'self'}]
         self.assertEqual(response.json, {'versions':
-                                         [{
-                                             'status':'DEPRECATED',
-                                             'name': 'v0.1',
-                                             'links': v01link,
-                                             },
-                                          {
-                                             'status':'CURRENT',
-                                             'name': 'v1.0',
-                                             'links': v10link,
-                                             }]
+                                         [{'status':'DEPRECATED',
+                                           'name': 'v0.1',
+                                           'links': v01link,
+                                           },
+                                          {'status':'CURRENT',
+                                           'name': 'v1.0',
+                                           'links': v10link,
+                                           }]
                                          })
 
     def test_versions_index_for_xml(self):
@@ -52,17 +51,20 @@ class TestVersionsController(tests.BaseTest):
 
         self.assertEqual(response.content_type, "application/xml")
         self.assertEqual(response.xml.tag, 'versions')
-        self.assertEqual(response.body,
-"""<versions>
-    <version name="v0.1" status="DEPRECATED">
-        <links>
-            <link href="http://localhost/v0.1" rel="self"/>
-        </links>
-    </version>
-    <version name="v1.0" status="CURRENT">
-        <links>
-            <link href="http://localhost/v1.0" rel="self"/>
-        </links>
-    </version>
-</versions>
-""")
+        self.assertEqual(
+            response.body,
+            ("<versions>\n"
+             "    <version name=\"v0.1\" status=\"DEPRECATED\">\n"
+             "        <links>\n"
+             "            <link href=\"http://localhost/v0.1\""
+             " rel=\"self\"/>\n"
+             "        </links>\n"
+             "    </version>\n"
+             "    <version name=\"v1.0\" status=\"CURRENT\">\n"
+             "        <links>\n"
+             "            <link href=\"http://localhost/v1.0\""
+             " rel=\"self\"/>\n"
+             "        </links>\n"
+             "    </version>\n"
+             "</versions>\n"
+             ))

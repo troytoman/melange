@@ -26,7 +26,7 @@ class DbBasedMacGenerator(object):
 
     def next_mac(self):
         allocatable_address = db_api.pop_allocatable_address(
-                models.AllocatableMac, mac_address_range_id=self.mac_range.id)
+            models.AllocatableMac, mac_address_range_id=self.mac_range.id)
         if allocatable_address is not None:
                 return allocatable_address
 
@@ -42,5 +42,5 @@ class DbBasedMacGenerator(object):
 
     def mac_removed(self, address):
         models.AllocatableMac.create(
-                mac_address_range_id=self.mac_range.id,
-                address=address)
+            mac_address_range_id=self.mac_range.id,
+            address=address)

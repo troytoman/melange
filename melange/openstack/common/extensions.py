@@ -220,15 +220,15 @@ class ExtensionMiddleware(wsgi.Middleware):
             if not action.collection in action_resources.keys():
                 resource = ActionExtensionResource(application)
                 mapper.connect("/%s/:(id)/action.:(format)" %
-                                action.collection,
-                                action='action',
-                                controller=resource,
-                                conditions=dict(method=['POST']))
+                               action.collection,
+                               action='action',
+                               controller=resource,
+                               conditions=dict(method=['POST']))
                 mapper.connect("/%s/:(id)/action" %
-                                action.collection,
-                                action='action',
-                                controller=resource,
-                                conditions=dict(method=['POST']))
+                               action.collection,
+                               action='action',
+                               controller=resource,
+                               conditions=dict(method=['POST']))
                 action_resources[action.collection] = resource
 
         return action_resources
@@ -240,21 +240,21 @@ class ExtensionMiddleware(wsgi.Middleware):
             if not req_ext.key in request_ext_resources.keys():
                 resource = RequestExtensionResource(application)
                 mapper.connect(req_ext.url_route + '.:(format)',
-                                action='process',
-                                controller=resource,
-                                conditions=req_ext.conditions)
+                               action='process',
+                               controller=resource,
+                               conditions=req_ext.conditions)
 
                 mapper.connect(req_ext.url_route,
-                                action='process',
-                                controller=resource,
-                                conditions=req_ext.conditions)
+                               action='process',
+                               controller=resource,
+                               conditions=req_ext.conditions)
                 request_ext_resources[req_ext.key] = resource
 
         return request_ext_resources
 
     def __init__(self, application, config, ext_mgr=None):
         ext_mgr = ext_mgr or ExtensionManager(
-                                 config['api_extensions_path'])
+            config['api_extensions_path'])
         mapper = routes.Mapper()
 
         # extended resources
@@ -274,8 +274,9 @@ class ExtensionMiddleware(wsgi.Middleware):
                             resource_ext.collection, **kargs)
 
         # extended actions
-        action_resources = self._action_ext_resources(application, ext_mgr,
-                                                        mapper)
+        action_resources = self._action_ext_resources(application,
+                                                      ext_mgr,
+                                                      mapper)
         for action in ext_mgr.get_actions():
             LOG.debug(_('Extended action: %s'), action.action_name)
             resource = action_resources[action.collection]

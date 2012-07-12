@@ -53,20 +53,22 @@ def map(engine, models):
                          == ip_addresses_table.c.id)
 
     orm.mapper(IpNat, ip_nats_table,
-           properties={'inside_global_address':
-                       orm.relation(models["IpAddress"],
-                                     primaryjoin=inside_global_join),
-                       'inside_local_address':
-                       orm.relation(models["IpAddress"],
-                                    primaryjoin=inside_local_join),
-                       }
+               properties={'inside_global_address':
+                           orm.relation(
+                               models["IpAddress"],
+                               primaryjoin=inside_global_join),
+                           'inside_local_address':
+                           orm.relation(
+                               models["IpAddress"],
+                               primaryjoin=inside_local_join),
+                           }
                )
 
     orm.mapper(AllowedIp, allowed_ips_table,
                properties={
                    'interface': orm.relation(models["Interface"]),
                    'ip_address': orm.relation(models["IpAddress"])
-                       }
+               }
                )
 
 

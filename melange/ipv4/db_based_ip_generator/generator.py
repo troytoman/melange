@@ -29,7 +29,7 @@ class DbBasedIpGenerator(object):
 
     def next_ip(self):
         allocatable_address = db_api.pop_allocatable_address(
-             models.AllocatableIp, ip_block_id=self.ip_block.id)
+            models.AllocatableIp, ip_block_id=self.ip_block.id)
 
         if allocatable_address is not None:
                 return allocatable_address
