@@ -41,10 +41,9 @@ class TestAuthMiddleware(tests.BaseTest):
         self.dummy_app = MiddlewareTestApp()
         self.auth_provider1 = self.mock.CreateMockAnything()
         self.auth_provider2 = self.mock.CreateMockAnything()
-        self.auth_middleware = auth.AuthorizationMiddleware(
-            self.dummy_app,
-            [self.auth_provider1,
-             self.auth_provider2])
+        self.auth_middleware = auth.AuthorizationMiddleware(self.dummy_app,
+                                                       [self.auth_provider1,
+                                                       self.auth_provider2])
         self.request = webob.Request.blank("/dummy_url")
         self.request.headers = {'X_TENANT': "tenant_id", 'X_ROLE': "Member"}
 

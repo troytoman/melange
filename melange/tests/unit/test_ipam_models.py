@@ -122,7 +122,7 @@ class TestQuery(tests.BaseTest):
             factory_models.IpBlockFactory(cidr="10.3.0.1/28"),
             factory_models.IpBlockFactory(cidr="10.1.0.1/28"),
             factory_models.IpBlockFactory(cidr="10.4.0.1/28"),
-        ])
+            ])
 
         marker_block = blocks[1]
         all_blocks_query = db_query.find_all(models.IpBlock)
@@ -177,8 +177,7 @@ class TestIpBlock(tests.BaseTest):
 
     def test_create_ip_block(self):
         factory_models.PrivateIpBlockFactory(cidr="10.0.0.0/8",
-                                             network_id="18888",
-                                             tenant_id='xxxx')
+                        network_id="18888", tenant_id='xxxx')
 
         saved_block = models.IpBlock.find_by(network_id="18888")
         self.assertEqual(saved_block.cidr, "10.0.0.0/8")
@@ -235,11 +234,11 @@ class TestIpBlock(tests.BaseTest):
 
     def test_type_for_block_should_be_either_public_or_private(self):
         block = factory_models.IpBlockFactory.build(type=None,
-                                                    cidr="10.0.0.0/29")
+                                                      cidr="10.0.0.0/29")
 
         self.assertFalse(block.is_valid())
         self.assertEqual(block.errors, {'type':
-                         ["type should be one among public, private"]})
+                            ["type should be one among public, private"]})
 
     def test_different_types_of_blocks_cannot_be_created_within_network(self):
         factory = factory_models.IpBlockFactory
@@ -262,7 +261,7 @@ class TestIpBlock(tests.BaseTest):
         factory = factory_models.PrivateIpBlockFactory
         parent_block = factory(cidr="10.0.0.0/28")
         ip_block = factory.build(cidr="10.0.0.20/29",
-                                 parent_id=parent_block.id)
+                                         parent_id=parent_block.id)
 
         self.assertFalse(ip_block.is_valid())
         self.assertEqual(ip_block.errors['cidr'],
@@ -272,7 +271,7 @@ class TestIpBlock(tests.BaseTest):
         factory = factory_models.PrivateIpBlockFactory
         parent_block = factory(cidr="10.0.0.0/28")
         ip_block = factory.build(cidr="10.0.0.20////29",
-                                 parent_id=parent_block.id)
+                                         parent_id=parent_block.id)
 
         self.assertFalse(ip_block.is_valid())
         self.assertEqual(ip_block.errors['cidr'],
@@ -318,9 +317,8 @@ class TestIpBlock(tests.BaseTest):
         overlapping_block = factory.build(cidr="10.0.0.0/31", network_id="1")
 
         self.assertFalse(overlapping_block.is_valid())
-        self.assertEqual(
-            overlapping_block.errors['cidr'],
-            ["cidr overlaps with block 10.0.0.0/29 in same network"])
+        self.assertEqual(overlapping_block.errors['cidr'],
+                     ["cidr overlaps with block 10.0.0.0/29 in same network"])
 
     def test_cidr_can_overlap_for_blocks_in_different_network(self):
         block1 = factory_models.IpBlockFactory(cidr="10.0.0.0/29",
@@ -415,7 +413,7 @@ class TestIpBlock(tests.BaseTest):
 
     def test_save_validates_existence_policy(self):
         block = factory_models.PublicIpBlockFactory.build(
-            policy_id="non-existent-id")
+                                                  policy_id="non-existent-id")
 
         self.assertFalse(block.is_valid())
         self.assertEqual(block.errors['policy_id'],
@@ -821,12 +819,11 @@ class TestIpBlock(tests.BaseTest):
     def test_data_with_gateway(self):
         policy = factory_models.PolicyFactory()
         parent_block = factory_models.PrivateIpBlockFactory(
-            cidr="10.0.0.0/24")
-        ip_block = factory_models.PrivateIpBlockFactory(
-            cidr="10.0.0.0/29",
-            policy_id=policy.id,
-            parent_id=parent_block.id,
-            gateway="10.0.0.1")
+                                                cidr="10.0.0.0/24")
+        ip_block = factory_models.PrivateIpBlockFactory(cidr="10.0.0.0/29",
+                                         policy_id=policy.id,
+                                         parent_id=parent_block.id,
+                                         gateway="10.0.0.1")
         data = ip_block.data()
 
         self.assertEqual(data['id'], ip_block.id)
@@ -846,11 +843,10 @@ class TestIpBlock(tests.BaseTest):
     def test_data_without_gateway(self):
         policy = factory_models.PolicyFactory()
         parent_block = factory_models.PrivateIpBlockFactory(
-            cidr="10.0.0.0/24")
-        ip_block = factory_models.PrivateIpBlockFactory(
-            cidr="10.0.0.0/29",
-            policy_id=policy.id,
-            parent_id=parent_block.id)
+                                                cidr="10.0.0.0/24")
+        ip_block = factory_models.PrivateIpBlockFactory(cidr="10.0.0.0/29",
+                                         policy_id=policy.id,
+                                         parent_id=parent_block.id)
         data = ip_block.data()
 
         self.assertEqual(data['id'], ip_block.id)
@@ -876,7 +872,7 @@ class TestIpBlock(tests.BaseTest):
 
         self.assertEqual(len(blocks), 3)
         self.assertItemsEqual(["10.2.0.0/28", "10.3.0.0/28", "10.1.0.0/28"],
-                              [block.cidr for block in blocks])
+                    [block.cidr for block in blocks])
 
     def test_delete(self):
         ip_block = factory_models.PrivateIpBlockFactory(cidr="10.0.0.0/29")
@@ -925,12 +921,10 @@ class TestIpBlock(tests.BaseTest):
 
     def test_subnets(self):
         ip_block = factory_models.PrivateIpBlockFactory(cidr="10.0.0.0/28")
-        subnet1 = factory_models.PrivateIpBlockFactory(
-            cidr="10.0.0.0/29",
-            parent_id=ip_block.id)
-        subnet2 = factory_models.PrivateIpBlockFactory(
-            cidr="10.0.0.8/29",
-            parent_id=ip_block.id)
+        subnet1 = factory_models.PrivateIpBlockFactory(cidr="10.0.0.0/29",
+                                        parent_id=ip_block.id)
+        subnet2 = factory_models.PrivateIpBlockFactory(cidr="10.0.0.8/29",
+                                        parent_id=ip_block.id)
 
         self.assertModelsEqual(ip_block.subnets(), [subnet1, subnet2])
 
@@ -963,12 +957,12 @@ class TestIpBlock(tests.BaseTest):
 
         with unit.StubTime(time=current_time):
             models.IpBlock.delete_all_deallocated_ips(
-                deallocated_by_func=models.deallocated_by_date)
+                    deallocated_by_func=models.deallocated_by_date)
 
         self.assertEqual(models.IpAddress.find_all(
-                         ip_block_id=ip_block1.id).all(), [])
+                               ip_block_id=ip_block1.id).all(), [])
         self.assertEqual(models.IpAddress.find_all(
-                         ip_block_id=ip_block2.id).all(), [])
+                               ip_block_id=ip_block2.id).all(), [])
 
     def test_delete_deallocated_ips_immediately(self):
         ip_block = factory_models.PrivateIpBlockFactory(cidr="10.0.1.1/24")
@@ -999,7 +993,7 @@ class TestIpBlock(tests.BaseTest):
 
         with unit.StubTime(time=current_time):
             ip_block.delete_deallocated_ips(
-                deallocated_by_func=models.deallocated_by_date)
+                    deallocated_by_func=models.deallocated_by_date)
 
         existing_ips = models.IpAddress.find_all(ip_block_id=ip_block.id).all()
         self.assertModelsEqual(existing_ips, [ip2])
@@ -1024,7 +1018,7 @@ class TestIpBlock(tests.BaseTest):
         with unit.StubConfig(keep_deallocated_ips_for_days=1):
             with unit.StubTime(time=current_time):
                 ip_block.delete_deallocated_ips(
-                    deallocated_by_func=models.deallocated_by_date)
+                        deallocated_by_func=models.deallocated_by_date)
 
         self.assertEqual(ip_block.addresses(), [ip2])
 
@@ -1040,7 +1034,7 @@ class TestIpBlock(tests.BaseTest):
         self.assertTrue(ip_block.is_full)
 
         models.IpBlock.delete_all_deallocated_ips(
-            deallocated_by_func=models.deallocated_by_date)
+                deallocated_by_func=models.deallocated_by_date)
 
         self.assertFalse(models.IpBlock.find(ip_block.id).is_full)
 
@@ -1111,9 +1105,9 @@ class TestIpAddress(tests.BaseTest):
                                     interface_id=interface.id)
 
         self.assertIsNotNone(models.IpAddress.create(ip_block_id=block2.id,
-                             address=block1_ip.address,
-                             used_by_tenant_id="tnt_id",
-                             interface_id=interface.id))
+                                              address=block1_ip.address,
+                                              used_by_tenant_id="tnt_id",
+                                              interface_id=interface.id))
 
     def test_find_ip_address(self):
         block = factory_models.PrivateIpBlockFactory(cidr="10.0.0.1/8")
@@ -1215,7 +1209,7 @@ class TestIpAddress(tests.BaseTest):
 
         inside_globals_query = local_ip.inside_globals()
         inside_globals, next_mrk = inside_globals_query.paginated_collection(
-            limit=2, marker=global_ips[1].id)
+                    limit=2, marker=global_ips[1].id)
 
         self.assertModelsEqual(inside_globals, [global_ips[2], global_ips[3]])
         self.assertEqual(next_mrk, global_ips[3].id)
@@ -1399,10 +1393,10 @@ class TestIpAddress(tests.BaseTest):
         block = factory_models.IpBlockFactory(cidr="10.1.1.1/24")
         interface = factory_models.InterfaceFactory(device_id="ins")
         ip = factory_models.IpAddressFactory(used_by_tenant_id="tnt_id",
-                                             address="10.1.1.1",
-                                             ip_block_id=block.id,
-                                             interface_id=interface.id,
-                                             )
+                                            address="10.1.1.1",
+                                            ip_block_id=block.id,
+                                            interface_id=interface.id,
+                                            )
 
         mock_notifier = _setup_notifier(self.mock)
         mock_notifier.info("delete IpAddress", dict(used_by_tenant_id="tnt_id",
@@ -1661,11 +1655,12 @@ class TestMacAddressRange(tests.BaseTest):
 
     def test_data(self):
         rng = factory_models.MacAddressRangeFactory(cidr="BC:76:4E:20:0:0/40")
-        expected_data = {'cidr': "BC:76:4E:20:0:0/40",
-                         'id': rng.id,
-                         'created_at': rng.created_at,
-                         'updated_at': rng.updated_at,
-                         }
+        expected_data = {
+                'cidr': "BC:76:4E:20:0:0/40",
+                'id': rng.id,
+                'created_at': rng.created_at,
+                'updated_at': rng.updated_at,
+                }
         self.assertEqual(expected_data, rng.data())
 
     def _mock_mac_creation(self):
@@ -1840,7 +1835,7 @@ class TestPolicy(tests.BaseTest):
         self.assertModelsEqual(ranges, [ip_range1, ip_range2])
         policy.delete()
         ranges_after_policy_deletion = models.IpRange.find_all(
-            policy_id=policy.id).all()
+                                              policy_id=policy.id).all()
         self.assertTrue(len(ranges_after_policy_deletion) is 0)
         self.assertTrue(models.IpRange.find(noise_ip_range.id) is not None)
 
@@ -1856,7 +1851,7 @@ class TestPolicy(tests.BaseTest):
         self.assertModelsEqual(octets, [ip_octet1, ip_octet2])
         policy.delete()
         octets_after_policy_deletion = models.IpOctet.find_all(
-            policy_id=policy.id).all()
+                                              policy_id=policy.id).all()
         self.assertTrue(len(octets_after_policy_deletion) is 0)
         self.assertTrue(models.IpOctet.find(noise_ip_octet.id) is not None)
 
@@ -1864,7 +1859,7 @@ class TestPolicy(tests.BaseTest):
         policy = factory_models.PolicyFactory(name="Blah")
         ip_block = factory_models.PrivateIpBlockFactory(policy_id=policy.id)
         noise_ip_block = factory_models.PrivateIpBlockFactory(
-            policy_id=factory_models.PolicyFactory().id)
+                                policy_id=factory_models.PolicyFactory().id)
 
         policy.delete()
         self.assertTrue(models.IpBlock.find(ip_block.id).policy_id is None)
@@ -2069,7 +2064,7 @@ class TestNetwork(tests.BaseTest):
 
         network = models.Network.find_by("net", tenant_id="tenant_id")
         allocate_ip = lambda interface: network.allocate_ips(
-            interface=interface)[0].address
+                                                interface=interface)[0].address
         self.assertTrue(block_of_uuid_1.contains(allocate_ip(interface)))
         self.assertTrue(block_of_uuid_2.contains(allocate_ip(interface)))
         self.assertTrue(block_of_uuid_3.contains(allocate_ip(interface)))
@@ -2172,7 +2167,7 @@ class TestNetwork(tests.BaseTest):
         ip_block2 = factory_models.IpBlockFactory(network_id="1",
                                                   cidr="20.0.0.0/24")
         noise_block = factory_models.IpBlockFactory(network_id="1",
-                                                    cidr="30.0.0.0/24")
+                                                  cidr="30.0.0.0/24")
         ip1 = _allocate_ip(ip_block1)
         ip2 = _allocate_ip(ip_block2)
         network = models.Network.find_by(id="1")
@@ -2390,9 +2385,9 @@ class TestInterface(tests.BaseTest):
         models.Interface.delete_by(device_id="instance1")
 
         [self.assertIsNone(models.Interface.get(iface.id)) for iface in
-            [interface1, interface2, interface3]]
+                    [interface1, interface2, interface3]]
         self.assertTrue(models.IpAddress.get(
-                        iface1_ip.id).marked_for_deallocation)
+                                iface1_ip.id).marked_for_deallocation)
 
 
 class TestAllowedIp(tests.BaseTest):
@@ -2487,7 +2482,7 @@ class TestAllowedIp(tests.BaseTest):
             block.deallocate_ip(ip.address)
         with unit.StubTime(time=current_time):
             block.delete_deallocated_ips(
-                deallocated_by_func=models.deallocated_by_date)
+                    deallocated_by_func=models.deallocated_by_date)
 
         reloaded_ip = models.IpAddress.find(ip.id)
         self.assertFalse(reloaded_ip.marked_for_deallocation)
@@ -2575,5 +2570,5 @@ def _allocate_ip(block, interface=None, **kwargs):
 
 
 def _setup_notifier(mock):
-    mock.StubOutClassWithMocks(notifier, "NoopNotifier")
-    return notifier.NoopNotifier()
+        mock.StubOutClassWithMocks(notifier, "NoopNotifier")
+        return notifier.NoopNotifier()

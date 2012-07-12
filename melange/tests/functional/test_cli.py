@@ -64,7 +64,7 @@ class TestDeleteDeallocatedIps(tests.BaseTest):
         self.assertIsNone(models.IpAddress.get(ip.id))
 
     def _push_back_deallocated_date(self, ip, seconds):
-        secs_to_subtract = datetime.timedelta(seconds=int(seconds))
+        seconds_to_subtract = datetime.timedelta(seconds=int(seconds))
         deallocated_ip = models.IpAddress.find(ip.id)
-        new_deallocated_date = deallocated_ip.deallocated_at - secs_to_subtract
+        new_deallocated_date = deallocated_ip.deallocated_at - seconds_to_subtract
         deallocated_ip.update(deallocated_at=(new_deallocated_date))
