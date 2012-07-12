@@ -55,7 +55,6 @@ class TestDeleteDeallocatedIps(tests.BaseTest):
 
         seconds = config.Config.get('keep_deallocated_ips_for_seconds')
         self._push_back_deallocated_date(ip, seconds)
-        print "SECONDS: ", seconds
 
         script = tests.melange_bin_path('melange-delete-deallocated-ips')
         config_file = tests.test_config_file()
