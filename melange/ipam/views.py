@@ -36,33 +36,30 @@ class IpConfigurationView(object):
         return data
 
     def _ip_address_data(self, ip):
-        return {
-            'id': ip.id,
-            'interface_id': ip.virtual_interface_id,
-            'address': ip.address,
-            'version': ip.version,
-            }
+        return {'id': ip.id,
+                'interface_id': ip.virtual_interface_id,
+                'address': ip.address,
+                'version': ip.version,
+                }
 
     def _block_data(self, block):
-        return {
-            'id': block.id,
-            'cidr': block.cidr,
-            'broadcast': block.broadcast,
-            'gateway': block.gateway,
-            'network_id': block.network_id,
-            'netmask': block.netmask,
-            'dns1': block.dns1,
-            'dns2': block.dns2,
-            'tenant_id': block.tenant_id,
-            }
+        return {'id': block.id,
+                'cidr': block.cidr,
+                'broadcast': block.broadcast,
+                'gateway': block.gateway,
+                'network_id': block.network_id,
+                'netmask': block.netmask,
+                'dns1': block.dns1,
+                'dns2': block.dns2,
+                'tenant_id': block.tenant_id,
+                }
 
     def _route_data(self, route):
-        return {
-            'id': route.id,
-            'destination': route.destination,
-            'gateway': route.gateway,
-            'netmask': route.netmask,
-            }
+        return {'id': route.id,
+                'destination': route.destination,
+                'gateway': route.gateway,
+                'netmask': route.netmask,
+                }
 
 
 class InterfaceConfigurationView(object):
