@@ -24,8 +24,9 @@ from melange import tests
 class TestVersionsController(tests.BaseTest):
 
     def setUp(self):
-        conf, melange_app = config.Config.load_paste_app('melange',
-                              {"config_file": tests.test_config_file()}, None)
+        conf, melange_app = config.Config.load_paste_app(
+            'melange',
+            {"config_file": tests.test_config_file()}, None)
         self.test_app = webtest.TestApp(melange_app)
         super(TestVersionsController, self).setUp()
 
@@ -34,16 +35,14 @@ class TestVersionsController(tests.BaseTest):
         v01link = [{'href': "http://localhost/v0.1", 'rel': 'self'}]
         v10link = [{'href': "http://localhost/v1.0", 'rel': 'self'}]
         self.assertEqual(response.json, {'versions':
-                                         [{
-                                             'status':'DEPRECATED',
-                                             'name': 'v0.1',
-                                             'links': v01link,
-                                             },
-                                          {
-                                             'status':'CURRENT',
-                                             'name': 'v1.0',
-                                             'links': v10link,
-                                             }]
+                                         [{'status':'DEPRECATED',
+                                           'name': 'v0.1',
+                                           'links': v01link,
+                                           },
+                                          {'status':'CURRENT',
+                                           'name': 'v1.0',
+                                           'links': v10link,
+                                           }]
                                          })
 
     def test_versions_index_for_xml(self):

@@ -26,7 +26,7 @@ from melange.tests.factories import models as factory_models
 class AllocatableIpFactory(factory.Factory):
     FACTORY_FOR = db_gen_models.AllocatableIp
     ip_block_id = factory.LazyAttribute(
-            lambda a: factory_models.IpBlockFactory().id)
+        lambda a: factory_models.IpBlockFactory().id)
 
     @factory.lazy_attribute_sequence
     def address(ip, n):

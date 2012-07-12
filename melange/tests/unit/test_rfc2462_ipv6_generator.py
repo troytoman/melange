@@ -24,8 +24,9 @@ from melange.tests import BaseTest
 class TestRFC2462IpV6Generator(BaseTest):
 
     def test_next_ip_generates_last_4_segments_for_slash_64_block(self):
-        generator = rfc2462_generator.RFC2462IpV6Generator(cidr="fe::/64",
-                                      mac_address="12:ff:12:89:67:34")
+        generator = rfc2462_generator.RFC2462IpV6Generator(
+            cidr="fe::/64",
+            mac_address="12:ff:12:89:67:34")
 
         ip = generator.next_ip()
 
@@ -33,8 +34,9 @@ class TestRFC2462IpV6Generator(BaseTest):
         self.assertIn(IPAddress(ip), IPNetwork("fe::/64"))
 
     def test_next_ip_increments_address_in_subsequent_calls(self):
-        generator = rfc2462_generator.RFC2462IpV6Generator(cidr="fe::/64",
-                                      mac_address="12:ff:12:89:67:34")
+        generator = rfc2462_generator.RFC2462IpV6Generator(
+            cidr="fe::/64",
+            mac_address="12:ff:12:89:67:34")
 
         ip_1 = generator.next_ip()
         ip_2 = generator.next_ip()
@@ -43,8 +45,9 @@ class TestRFC2462IpV6Generator(BaseTest):
         self.assertEqual(ip_2, "fe::10ff:12ff:fe89:6735")
 
     def test_next_ip_generates_ip_for_block_smaller_than_slash_64(self):
-        generator = rfc2462_generator.RFC2462IpV6Generator(cidr="fe::/72",
-                                      mac_address="12:ff:12:89:67:34")
+        generator = rfc2462_generator.RFC2462IpV6Generator(
+            cidr="fe::/72",
+            mac_address="12:ff:12:89:67:34")
 
         ip = generator.next_ip()
 

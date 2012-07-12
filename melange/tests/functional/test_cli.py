@@ -53,8 +53,9 @@ class TestDeleteDeallocatedIps(tests.BaseTest):
         ip = factory_models.IpAddressFactory(ip_block_id=block.id)
         block.deallocate_ip(ip.address)
 
-        days = config.Config.get('keep_deallocated_ips_for_days')
-        self._push_back_deallocated_date(ip, days)
+        seconds = config.Config.get('keep_deallocated_ips_for_seconds')
+        self._push_back_deallocated_date(ip, seconds)
+        print "SECONDS: ", seconds
 
         script = tests.melange_bin_path('melange-delete-deallocated-ips')
         config_file = tests.test_config_file()
@@ -62,8 +63,8 @@ class TestDeleteDeallocatedIps(tests.BaseTest):
 
         self.assertIsNone(models.IpAddress.get(ip.id))
 
-    def _push_back_deallocated_date(self, ip, days):
-        days_to_subtract = datetime.timedelta(days=int(days))
+    def _push_back_deallocated_date(self, ip, seconds):
+        seconds_to_subtract = datetime.timedelta(seconds=int(seconds))
         deallocated_ip = models.IpAddress.find(ip.id)
-        new_deallocated_date = deallocated_ip.deallocated_at - days_to_subtract
+        new_deallocated_date = deallocated_ip.deallocated_at - seconds_to_subtract
         deallocated_ip.update(deallocated_at=(new_deallocated_date))

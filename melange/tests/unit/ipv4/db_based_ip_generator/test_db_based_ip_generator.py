@@ -31,7 +31,7 @@ class TestDbBasedIpGenerator(tests.BaseTest):
     def test_next_ip_picks_from_allocatable_ip_list_first(self):
         block = factory_models.PrivateIpBlockFactory(cidr="10.0.0.0/24")
         factories.AllocatableIpFactory(ip_block_id=block.id,
-                                            address="10.0.0.8")
+                                       address="10.0.0.8")
 
         address = generator.DbBasedIpGenerator(block).next_ip()
 
@@ -62,7 +62,7 @@ class TestDbBasedIpGenerator(tests.BaseTest):
         block = factory_models.PrivateIpBlockFactory(
             cidr="10.0.0.0/29", allocatable_ip_counter=full_counter)
         factories.AllocatableIpFactory(ip_block_id=block.id,
-                                            address="10.0.0.4")
+                                       address="10.0.0.4")
 
         address = generator.DbBasedIpGenerator(block).next_ip()
 
@@ -74,7 +74,8 @@ class TestDbBasedIpGenerator(tests.BaseTest):
 
         generator.DbBasedIpGenerator(block).ip_removed("10.0.0.2")
 
-        allocatable_ip = ipv4_models.AllocatableIp.get_by(address="10.0.0.2",
+        allocatable_ip = ipv4_models.AllocatableIp.get_by(
+            address="10.0.0.2",
             ip_block_id=block.id)
 
         self.assertIsNotNone(allocatable_ip)

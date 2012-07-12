@@ -34,7 +34,7 @@ class TestIpv6AddressGeneratorFactory(tests.BaseTest):
         args = dict(tenant_id="1", mac_address="00:11:22:33:44:55")
         with unit.StubConfig(ipv6_generator=self.mock_generator_name):
             ip_generator = ipv6.address_generator_factory("fe::/64",
-                                                                 **args)
+                                                          **args)
 
         self.assertEqual(ip_generator.kwargs, args)
         self.assertTrue(isinstance(ip_generator,
@@ -45,8 +45,9 @@ class TestIpv6AddressGeneratorFactory(tests.BaseTest):
 
         ip_generator = ipv6.address_generator_factory("fe::/64", **args)
 
-        self.assertTrue(isinstance(ip_generator,
-                              tenant_based_generator.TenantBasedIpV6Generator))
+        self.assertTrue(isinstance(
+            ip_generator,
+            tenant_based_generator.TenantBasedIpV6Generator))
 
     def test_raises_error_if_required_params_are_missing(self):
         self.assertRaises(exception.ParamsMissingError,

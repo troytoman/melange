@@ -33,16 +33,15 @@ from melange.tests import unit
 class NotifierTestBase():
 
     def _setup_expected_message(self, priority, event,
-                                 message):
+                                message):
         self.setup_uuid_with("test_uuid")
-        return {
-            'event_type': event,
-            'timestamp': str(utils.utcnow()),
-            'priority': priority,
-            'message_id': "test_uuid",
-            'payload': message,
-            'publisher_id': socket.gethostname(),
-            }
+        return {'event_type': event,
+                'timestamp': str(utils.utcnow()),
+                'priority': priority,
+                'message_id': "test_uuid",
+                'payload': message,
+                'publisher_id': socket.gethostname(),
+                }
 
 
 class TestLoggingNotifier(tests.BaseTest, NotifierTestBase):
@@ -126,8 +125,7 @@ class TestQueueNotifier(tests.BaseTest, NotifierTestBase):
             self.mock.StubOutWithMock(messaging, "Queue")
             self._setup_queue_mock("error", "test_event", "test_message")
             messaging.Queue("melange.notifier.ERROR",
-                            "notifier").AndReturn(
-                    self.mock_queue)
+                            "notifier").AndReturn(self.mock_queue)
             self.mock.ReplayAll()
 
             self.notifier.error("test_event", "test_message")

@@ -43,7 +43,7 @@ class TestIpConfigurationView(tests.BaseTest):
         block = factory_models.IpBlockFactory()
         interface = factory_models.InterfaceFactory(vif_id_on_device="123")
         ip = factory_models.IpAddressFactory(ip_block_id=block.id,
-                                              interface_id=interface.id)
+                                             interface_id=interface.id)
         ip.deallocate()
         deallocated_ip = models.IpAddress.find(ip.id)
         expected_ip_config = _ip_data(deallocated_ip, block)
@@ -72,28 +72,26 @@ def _ip_data(ip, block):
         'interface_id': ip.virtual_interface_id,
         'address': ip.address,
         'version': ip.version,
-        'ip_block': {
-            'id': block.id,
-            'cidr': block.cidr,
-            'network_id': block.network_id,
-            'broadcast': block.broadcast,
-            'gateway': block.gateway,
-            'netmask': block.netmask,
-            'dns1': block.dns1,
-            'dns2': block.dns2,
-            'ip_routes': [],
-            'tenant_id': block.tenant_id,
-            },
-        }
+        'ip_block': {'id': block.id,
+                     'cidr': block.cidr,
+                     'network_id': block.network_id,
+                     'broadcast': block.broadcast,
+                     'gateway': block.gateway,
+                     'netmask': block.netmask,
+                     'dns1': block.dns1,
+                     'dns2': block.dns2,
+                     'ip_routes': [],
+                     'tenant_id': block.tenant_id,
+                     },
+    }
 
 
 def _route_data(route):
-    return {
-        'id': route.id,
-        'destination': route.destination,
-        'gateway': route.gateway,
-        'netmask': route.netmask,
-        }
+    return {'id': route.id,
+            'destination': route.destination,
+            'gateway': route.gateway,
+            'netmask': route.netmask,
+            }
 
 
 class TestInterfaceConfigurationView(tests.BaseTest):

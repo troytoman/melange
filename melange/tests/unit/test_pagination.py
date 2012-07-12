@@ -58,7 +58,7 @@ class TestPaginatedDataView(BaseTest):
                                  next_page_marker)
         self.assertTrue('ip_blocks_links' not in view.data_for_json())
         data_for_xml = find(lambda obj: isinstance(obj, AtomLink),
-                           view.data_for_xml()['ip_blocks'])
+                            view.data_for_xml()['ip_blocks'])
         self.assertIsNone(data_for_xml)
 
 
