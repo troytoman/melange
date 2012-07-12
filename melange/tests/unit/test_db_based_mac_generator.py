@@ -52,5 +52,5 @@ class TestDbBasedMacGenerator(tests.BaseTest):
 
         self.assertIsNone(models.MacAddress.get(mac.id))
         allocatable_mac = mac_models.AllocatableMac.get_by(
-                                mac_address_range_id=rng.id)
+            mac_address_range_id=rng.id)
         self.assertEqual(mac.address, allocatable_mac.address)
