@@ -478,6 +478,12 @@ class TestIpBlock(tests.BaseTest):
         ip = _allocate_ip(block)
         self.assertEqual(block.find_ip(address=ip.address).id, ip.id)
 
+    def test_percent_used(self):
+        block = factory_models.PrivateIpBlockFactory(cidr="10.0.0.1/30")
+        ip1 = _allocate_ip(block)
+        ip2 = _allocate_ip(block)
+        self.assertEqual(block.percent_used, 50)
+
     def test_find_ip_for_nonexistent_address(self):
         block = factory_models.PrivateIpBlockFactory(cidr="10.0.0.1/8")
 
