@@ -145,9 +145,11 @@ def find_natted_ips(**kwargs):
 
 
 def find_all_blocks_with_deallocated_ips():
+    deallocate = True
     return _base_query(ipam.models.IpBlock).\
         join(ipam.models.IpAddress).\
-        filter(ipam.models.IpAddress.marked_for_deallocation == True)
+        filter(ipam.models.IpAddress.marked_for_deallocation
+               == deallocate)
 
 
 def find_deallocated_ips(deallocated_by, **kwargs):
@@ -158,13 +160,14 @@ def find_deallocated_ips(deallocated_by, **kwargs):
 
 def find_all_top_level_blocks_in_network(network_id):
     parent_block = aliased(ipam.models.IpBlock, name="parent_block")
+    id = None
 
     return _base_query(ipam.models.IpBlock).\
         outerjoin((parent_block,
                    and_(ipam.models.IpBlock.parent_id == parent_block.id,
                         parent_block.network_id == network_id))).\
         filter(ipam.models.IpBlock.network_id == network_id).\
-        filter(parent_block.id == None)
+        filter(parent_block.id == id)
 
 
 def find_all_ips_in_network(model, network_id=None, **conditions):
@@ -175,8 +178,10 @@ def find_all_ips_in_network(model, network_id=None, **conditions):
 
 def find_all_allocated_ips(model, used_by_device=None, used_by_tenant=None,
                            **conditions):
+    deallocated_on = None
     query = _query_by(ipam.models.IpAddress, **conditions).\
-        filter(or_(ipam.models.IpAddress.marked_for_deallocation == None,
+        filter(or_(ipam.models.IpAddress.marked_for_deallocation
+                   == deallocated_on,
                    ipam.models.IpAddress.marked_for_deallocation is False))
 
     if used_by_device or used_by_tenant:
