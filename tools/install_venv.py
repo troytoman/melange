@@ -63,9 +63,9 @@ def run_command(cmd, redirect_output=True, check_exit_code=True):
 
 
 HAS_EASY_INSTALL = bool(run_command(['which', 'easy_install'],
-                    check_exit_code=False).strip())
+                        check_exit_code=False).strip())
 HAS_VIRTUALENV = bool(run_command(['which', 'virtualenv'],
-                    check_exit_code=False).strip())
+                      check_exit_code=False).strip())
 
 
 def check_dependencies():
@@ -103,14 +103,14 @@ def install_dependencies(venv=VENV):
     # Install greenlet by hand - just listing it in the requires file does not
     # get it in stalled in the right order
     run_command(['tools/with_venv.sh', 'pip', 'install', '-E', venv,
-              'greenlet'], redirect_output=False)
+                 'greenlet'], redirect_output=False)
     for requires in (PIP_REQUIRES, TEST_REQUIRES):
         run_command(['tools/with_venv.sh', 'pip', 'install', '-E', venv, '-r',
                      requires], redirect_output=False)
 
     # Tell the virtual env how to "import melange"
     pthfile = os.path.join(venv, "lib", PY_VERSION, "site-packages",
-                        "melange.pth")
+                           "melange.pth")
     f = open(pthfile, 'w')
     f.write("%s\n" % ROOT)
 

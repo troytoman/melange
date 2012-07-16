@@ -98,4 +98,4 @@ setup(name='melange',
                ],
       py_modules=[],
       namespace_packages=['melange'],
-    )
+      )
