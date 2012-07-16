@@ -1052,8 +1052,8 @@ class IpOctet(ModelBase):
         return self.octet == netaddr.IPAddress(address).words[-1]
 
     def size(size, cidr):
-        cidr_prefix_legnth = netaddr.IPAddress(cidr).prefixlength
-        if cidr_prefix_legnth < 24:
+        cidr_prefix_length = netaddr.IPNetwork(cidr).prefixlen
+        if cidr_prefix_length < 24:
             size = 2 ** (24 - cidr_prefix_length)
         else:
             size = 1
