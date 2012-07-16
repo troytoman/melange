@@ -252,7 +252,7 @@ class IpBlock(ModelBase):
     _allowed_block_types = [PUBLIC_TYPE, PRIVATE_TYPE]
     _data_fields = ['cidr', 'network_id', 'policy_id', 'tenant_id', 'gateway',
                     'parent_id', 'type', 'dns1', 'dns2', 'broadcast',
-                    'netmask', 'percent_used']
+                    'netmask', 'percent_used', 'ips_used']
     on_create_notification_fields = ['tenant_id', 'id', 'type', 'created_at']
     on_delete_notification_fields = ['tenant_id', 'id', 'type', 'created_at']
 
@@ -284,13 +284,17 @@ class IpBlock(ModelBase):
             return str(netaddr.IPNetwork(self.cidr).netmask)
 
     @property
-    def percent_used(self):
+    def ips_used(self):
         allocated_count = IpAddress.find_all(ip_block_id=self.id).count()
         if self.policy_id:
             reserved = self.policy().size(self.cidr)
         else:
             reserved = 0
-        return (float(allocated_count + reserved) / self.size()) * 100.0
+        return allocated_count + reserved
+
+    @property
+    def percent_used(self):
+        return (float(self.ips_used) / self.size()) * 100.0
 
     def is_ipv6(self):
         return netaddr.IPNetwork(self.cidr).version == 6
