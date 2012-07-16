@@ -286,7 +286,11 @@ class IpBlock(ModelBase):
     @property
     def percent_used(self):
         allocated_count = IpAddress.find_all(ip_block_id=self.id).count()
-        return (float(allocated_count) / self.size()) * 100.0
+        if self.policy_id:
+            reserved = self.policy().size(self.cidr)
+        else:
+            reserved = 0
+        return (float(allocated_count + reserved) / self.size()) * 100.0
 
     def is_ipv6(self):
         return netaddr.IPNetwork(self.cidr).version == 6
@@ -995,6 +999,15 @@ class Policy(ModelBase):
     def find_ip_octet(self, ip_octet_id):
         return IpOctet.find_by(id=ip_octet_id, policy_id=self.id)
 
+    def size(self, cidr):
+        size = 0
+        policies = IpRange.find_all(policy_id=self.id).all()
+        policies += IpOctet.find_all(policy_id=self.id).all()
+        if policies:
+            for p in policies:
+                size += p.size(cidr)
+        return size
+
 
 class IpRange(ModelBase):
 
@@ -1013,6 +1026,22 @@ class IpRange(ModelBase):
     def _validate(self):
         self._validate_positive_integer('length')
 
+    def size(self, cidr):
+        block_size = netaddr.IPNetwork(cidr).size
+        if self.offset >= 0:
+            if (self.offset + self.length) <= block_size:
+                size = self.length
+            else:
+                size = block_size - self.offset
+        else:
+            if abs(self.offset) > block_size:
+                size = block_size + self.offset + self.length
+            elif self.length > abs(self.offset):
+                size = abs(self.offset)
+            else:
+                size = self.length
+        return size
+
 
 class IpOctet(ModelBase):
 
@@ -1021,6 +1050,14 @@ class IpOctet(ModelBase):
 
     def applies_to(self, address):
         return self.octet == netaddr.IPAddress(address).words[-1]
+
+    def size(size, cidr):
+        cidr_prefix_legnth = netaddr.IPAddress(cidr).prefixlength
+        if cidr_prefix_legnth < 24:
+            size = 2 ** (24 - cidr_prefix_length)
+        else:
+            size = 1
+        return size
 
 
 class Network(ModelBase):
