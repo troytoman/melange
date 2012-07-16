@@ -480,17 +480,15 @@ class TestIpBlock(tests.BaseTest):
 
     def test_percent_used(self):
         policy = factory_models.PolicyFactory(name="blah")
-        interface = factory_models.InterfaceFactory()
         factory_models.IpRangeFactory(policy_id=policy.id,
-                                      offset=0,
-                                      length=252)
+                                      offset=1,
+                                      length=1)
         factory_models.IpOctetFactory(policy_id=policy.id,
                                       octet=0)
         block = factory_models.PrivateIpBlockFactory(cidr="10.0.0.1/23",
                                                      policy_id=policy.id)
         ip1 = _allocate_ip(block)
-        ip2 = _allocate_ip(block)
-        self.assertEqual(block.percent_used, 50)
+        self.assertEqual(block.percent_used, 0.78125)
 
     def test_find_ip_for_nonexistent_address(self):
         block = factory_models.PrivateIpBlockFactory(cidr="10.0.0.1/8")
