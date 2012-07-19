@@ -186,6 +186,19 @@ class TestIpBlock(tests.BaseTest):
         self.assertEqual(saved_block.type, "private")
         self.assertEqual(saved_block.tenant_id, "xxxx")
 
+    def test_create_ip_block_with_network_name(self):
+        factory_models.PrivateIpBlockFactory(
+            cidr="10.0.0.0/8",
+            network_id="18888", tenant_id='xxxx',
+            network_name="johnnies_network")
+
+        saved_block = models.IpBlock.find_by(network_id="18888")
+        self.assertEqual(saved_block.cidr, "10.0.0.0/8")
+        self.assertEqual(saved_block.network_id, '18888')
+        self.assertEqual(saved_block.network_name, 'johnnies_network')
+        self.assertEqual(saved_block.type, "private")
+        self.assertEqual(saved_block.tenant_id, "xxxx")
+
     def test_block_details(self):
         v4_block = factory_models.IpBlockFactory.build(cidr="10.0.0.0/24")
         v6_block = factory_models.IpBlockFactory.build(cidr="fe::/64")
@@ -459,6 +472,14 @@ class TestIpBlock(tests.BaseTest):
         block.update(network_id="123")
 
         self.assertEqual(block.network_id, "123")
+
+    def test_update_name(self):
+        block = factory_models.PublicIpBlockFactory(cidr="10.0.0.0/29",
+                                                    network_id="321")
+
+        block.update(network_name="Johnnies Network")
+
+        self.assertEqual(block.network_name, "Johnnies Network")
 
     def test_find_ip_block(self):
         block1 = factory_models.PrivateIpBlockFactory(cidr="10.0.0.1/8")

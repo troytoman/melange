@@ -26,6 +26,7 @@ def map(engine, models):
     meta.bind = engine
     if mapping_exists(models["IpBlock"]):
         return
+    ip_blocks_table = Table('ip_blocks', meta, autoload=True)
     ip_nats_table = Table('ip_nats', meta, autoload=True)
     ip_addresses_table = Table('ip_addresses', meta, autoload=True)
     policies_table = Table('policies', meta, autoload=True)
@@ -37,7 +38,7 @@ def map(engine, models):
     interfaces_table = Table('interfaces', meta, autoload=True)
     allowed_ips_table = Table('allowed_ips', meta, autoload=True)
 
-    orm.mapper(models["IpBlock"], Table('ip_blocks', meta, autoload=True))
+    orm.mapper(models["IpBlock"], ip_blocks_table)
     orm.mapper(models["IpAddress"], ip_addresses_table)
     orm.mapper(models["Policy"], policies_table)
     orm.mapper(models["Interface"], interfaces_table)
