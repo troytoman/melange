@@ -98,8 +98,8 @@ class IpBlockController(BaseController, DeleteAction, ShowAction):
 
     def index(self, request, tenant_id):
         LOG.info("Listing all IP blocks for tenant '%s'" % tenant_id)
-        type_dict = utils.filter_dict(request.params, 'type')
-        all_blocks = models.IpBlock.find_all(tenant_id=tenant_id, **type_dict)
+        filters = utils.filter_dict(request.params, 'type', 'network_id')
+        all_blocks = models.IpBlock.find_all(tenant_id=tenant_id, **filters)
         return self._paginated_response('ip_blocks', all_blocks, request)
 
     def create(self, request, tenant_id, body=None):
@@ -133,6 +133,7 @@ class SubnetController(BaseController):
         subnet = ip_block.subnet(**utils.filter_dict(params,
                                                      'cidr',
                                                      'network_id',
+                                                     'network_name',
                                                      'tenant_id'))
         return wsgi.Result(dict(subnet=subnet.data()), 201)
 

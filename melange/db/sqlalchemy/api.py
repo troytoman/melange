@@ -19,6 +19,7 @@ import sqlalchemy.exc
 from sqlalchemy import and_
 from sqlalchemy import or_
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm import clear_mappers
 
 from melange import ipam
 from melange.common import exception
@@ -269,6 +270,9 @@ def db_downgrade(options, version, repo_path=None):
 def db_reset(options, *plugins):
     drop_db(options)
     db_sync(options)
+    # NOTE(jkoelker) This is bad, but the only way for the models to pick
+    #                up columns added in the migrations for unittests
+    clear_mappers()
     db_reset_for_plugins(options, *plugins)
     configure_db(options)
 

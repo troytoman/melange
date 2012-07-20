@@ -48,6 +48,7 @@ class IpConfigurationView(object):
                 'broadcast': block.broadcast,
                 'gateway': block.gateway,
                 'network_id': block.network_id,
+                'network_name': block.network_name,
                 'netmask': block.netmask,
                 'dns1': block.dns1,
                 'dns2': block.dns2,

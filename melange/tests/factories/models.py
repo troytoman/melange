@@ -30,6 +30,7 @@ class IpBlockFactory(factory.Factory):
     dns2 = "8.8.4.4"
     tenant_id = "tenant_id"
     network_id = "network1234"
+    network_name = None
 
 
 class PublicIpBlockFactory(IpBlockFactory):

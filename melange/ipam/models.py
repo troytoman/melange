@@ -252,7 +252,7 @@ class IpBlock(ModelBase):
     _allowed_block_types = [PUBLIC_TYPE, PRIVATE_TYPE]
     _data_fields = ['cidr', 'network_id', 'policy_id', 'tenant_id', 'gateway',
                     'parent_id', 'type', 'dns1', 'dns2', 'broadcast',
-                    'netmask', 'percent_used', 'ips_used']
+                    'netmask', 'percent_used', 'ips_used', 'network_name']
     on_create_notification_fields = ['tenant_id', 'id', 'type', 'created_at']
     on_delete_notification_fields = ['tenant_id', 'id', 'type', 'created_at']
 
@@ -451,11 +451,14 @@ class IpBlock(ModelBase):
             generator.ip_removed(ip.address)
             ip.delete()
 
-    def subnet(self, cidr, network_id=None, tenant_id=None):
+    def subnet(self, cidr, network_id=None, tenant_id=None,
+               network_name=None):
         network_id = network_id or self.network_id
+        network_name = network_name or self.network_name
         tenant_id = tenant_id or self.tenant_id
         return IpBlock.create(cidr=cidr,
                               network_id=network_id,
+                              network_name=network_name,
                               parent_id=self.id,
                               type=self.type,
                               tenant_id=tenant_id)
