@@ -1155,6 +1155,8 @@ class Network(ModelBase):
 
     def _allocate_first_free_ip(self, ip_blocks, **kwargs):
         for ip_block in ip_blocks:
+            if ip_block.omg_do_not_use:
+                continue
             try:
                 return ip_block.allocate_ip(**kwargs)
             except exception.NoMoreAddressesError:
