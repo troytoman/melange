@@ -442,14 +442,13 @@ class IpBlock(ModelBase):
             ip_address.deallocate()
 
     def delete_deallocated_ips(self, deallocated_by_func):
-        self.update(is_full=False)
-
         for ip in db.db_api.find_deallocated_ips(
                 deallocated_by=deallocated_by_func(), ip_block_id=self.id):
             LOG.debug("Deleting deallocated IP: %s" % ip)
             generator = ipv4.plugin().get_generator(self)
             generator.ip_removed(ip.address)
             ip.delete()
+        self.update(is_full=False)
 
     def subnet(self, cidr, network_id=None, tenant_id=None,
                network_name=None):
